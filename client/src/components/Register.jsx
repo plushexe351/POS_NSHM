@@ -1,9 +1,14 @@
-import React, { useContext, useState } from "react";
+import React, { useState } from "react";
 import axios from "axios";
-import { Link, Navigate, useNavigate } from "react-router-dom";
-import { AuthContext } from "../context/AuthContext";
+import { Link, useNavigate } from "react-router-dom";
+import nshmLogo from "../assets/nshm-logo.png";
+import {
+  faCircleXmark,
+  faExclamation,
+  faExclamationCircle,
+  faX,
+} from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faFileWaveform, faUserGear } from "@fortawesome/free-solid-svg-icons";
 
 function Register() {
   const [username, setUsername] = useState("");
@@ -17,7 +22,7 @@ function Register() {
   const [message, setMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const navigate = useNavigate();
-  // const { registerStatus, setRegisterStatus } = useContext(AuthContext);
+
   const handleAdminLoginClick = () => {
     navigate("/admin/login");
   };
@@ -25,6 +30,7 @@ function Register() {
   const handleUserLoginClick = () => {
     navigate("/login");
   };
+
   const handleRegister = async (e) => {
     e.preventDefault();
     try {
@@ -41,7 +47,6 @@ function Register() {
 
       setMessage(response.data.message);
       setErrorMessage("");
-
       navigate("/login");
     } catch (error) {
       console.error("Error registering user:", error);
@@ -49,110 +54,129 @@ function Register() {
       setMessage("");
     }
   };
-  // if (!registerStatus) {
-  //   return <Navigate to="/register/request" />;
-  // }
-  // if (registerStatus) {
-  return (
-    <div className="register">
-      <div className="hero"></div>
-      <div className="style-form">
-        <h2>Register</h2>
-        <form onSubmit={handleRegister}>
-          <input
-            type="text"
-            placeholder="Full name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-          />
 
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-          <input
-            type="text"
-            placeholder="Organization"
-            value={organization}
-            onChange={(e) => setOrganization(e.target.value)}
-            required
-          />
-          <input
-            type="text"
-            placeholder="Location"
-            value={location}
-            onChange={(e) => setLocation(e.target.value)}
-            required
-          />
-          <input
-            type="text"
-            placeholder="Reason for access"
-            value={reason}
-            onChange={(e) => setReason(e.target.value)}
-            required
-          />
-          <input
-            type="text"
-            placeholder="Desired role (admin / general user)"
-            value={desiredRole}
-            onChange={(e) => setDesiredRole(e.target.value)}
-            required
-          />
-          <input
-            type="text"
-            placeholder="Set Username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            required
-          />
-          <input
-            type="password"
-            placeholder="Set Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-          <button type="submit" className="submit">
-            Confirm Registration
-          </button>
-        </form>
-        {/* <div className="link-container">
-          Have an Account ?
-          <Link to="/login" className="link">
-            Login
-          </Link>
-        </div> */}
-        {message && <div className="message">{message}</div>}
-        {errorMessage && (
-          <div className="message errorMessage">{errorMessage}</div>
-        )}
+  return (
+    <div className="login register">
+      <div className="login--navbar">
+        <h1>NSHM Kolkata</h1>
+        <div className="wordbreak"></div>
+        <span>Purchase Order Portal</span>
       </div>
-      <div className="loginProvider">
-        <div className="nav-section--title">
-          <div className="linebreak"></div>
-          <h2 className="section-title">Have an account ?</h2>
-          <div className="linebreak"></div>
-        </div>
-        <div
-          className="style-form user-login-provider"
-          onClick={handleUserLoginClick}
-        >
-          <FontAwesomeIcon icon={faFileWaveform} className="icon" /> User Login
-        </div>
-        <div
-          className="style-form user-login-provider"
-          onClick={handleAdminLoginClick}
-        >
-          <FontAwesomeIcon icon={faUserGear} className="icon" /> Admin Login
+      <div className="style-form">
+        <div className="form-container">
+          <form onSubmit={handleRegister}>
+            {message && <div className="message">{message}</div>}
+            {errorMessage && (
+              <div className="message errorMessage">
+                <FontAwesomeIcon icon={faExclamationCircle} /> {errorMessage}
+              </div>
+            )}
+            <h1>Register</h1>
+
+            <div className="select-group">
+              <label htmlFor="role">Desired Role</label>
+              <select
+                id="role"
+                name="role"
+                value={desiredRole}
+                onChange={(e) => setDesiredRole(e.target.value)}
+                required
+              >
+                <option value="" disabled>
+                  Select role
+                </option>
+                <option value="admin">Admin</option>
+                <option value="general user">General User</option>
+              </select>
+            </div>
+            <div className="linebreak"></div>
+            <div className="input-container">
+              <input
+                type="text"
+                placeholder="Full name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+              />
+              <input
+                type="email"
+                placeholder="Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+              <input
+                type="text"
+                placeholder="Organization"
+                value={organization}
+                onChange={(e) => setOrganization(e.target.value)}
+                required
+              />
+              <input
+                type="text"
+                placeholder="Location"
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                required
+              />
+              <input
+                type="text"
+                placeholder="Reason for access"
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+                required
+              />
+
+              <input
+                type="text"
+                placeholder="Set Username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                required
+              />
+              <input
+                type="password"
+                placeholder="Set Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+              {/* <div className="linebreak"></div> */}
+            </div>
+            <button type="submit" className="submit">
+              Confirm Registration
+            </button>
+            <div className="nav-section--title">
+              <div className="linebreak"></div>
+              <div className="section-title">OR</div>
+              <div className="linebreak"></div>
+            </div>
+            <div className="loginProvider">
+              <div
+                className="user-login-provider"
+                onClick={handleUserLoginClick}
+              >
+                User Login
+              </div>
+              <div className="nav-section--title">
+                <div className="linebreak"></div>
+                <strong className="section-title">
+                  Have an admin account ?
+                </strong>
+                <div className="linebreak"></div>
+              </div>
+              <div
+                className="user-login-provider"
+                onClick={handleAdminLoginClick}
+              >
+                Admin Login
+              </div>
+            </div>
+          </form>
         </div>
       </div>
     </div>
   );
 }
-// }
 
 export default Register;

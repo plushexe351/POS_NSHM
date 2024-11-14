@@ -4,12 +4,17 @@ import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
+  faExclamationCircle,
   faFileWaveform,
   faPersonDotsFromLine,
   faUser,
   faUserGear,
 } from "@fortawesome/free-solid-svg-icons";
+import iphone from "../assets/iphone.png";
+import nshmLogo from "../assets/nshm-logo.png";
+import mac from "../assets/mac.png";
 import InfoModal from "./InfoModal";
+
 function AdminLogin() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -53,52 +58,76 @@ function AdminLogin() {
 
   return (
     <div className="login">
-      <div className="style-form">
-        <h2>Admin Login</h2>
-
-        <form onSubmit={handleLogin}>
-          <input
-            type="text"
-            placeholder="Username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          <button type="submit" className="submit">
-            Login as admin
-          </button>
-        </form>
-        {message && <div className="message">{message}</div>}
-        {errorMessage && !errorMessage.includes("User not accepted") && (
-          <div className="message errorMessage">{errorMessage}</div>
-        )}
-        {errorMessage.includes("User not accepted") && (
-          <InfoModal msg="You will be able to login if your registration requests have been approved" />
-        )}
+      <div className="login--navbar">
+        <h1>NSHM Kolkata</h1>
+        <div className="wordbreak"></div>
+        <span>Purchase Order Portal</span>
       </div>
-      <div className="loginProvider">
-        <div
-          className="style-form user-login-provider"
-          onClick={handleUserLoginClick}
-        >
-          <FontAwesomeIcon icon={faUser} className="icon" /> User Login
+      <div className="style-form">
+        <div className="form-container">
+          <form onSubmit={handleLogin}>
+            <h1>Admin Login</h1>
+            <input
+              type="text"
+              placeholder="Username"
+              value={username}
+              id="username"
+              onChange={(e) => setUsername(e.target.value)}
+            />
+
+            <input
+              type="password"
+              placeholder="Password"
+              id="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            <button type="submit" className="submit">
+              Login as admin
+            </button>
+            <div className="nav-section--title">
+              <div className="linebreak"></div>
+              <div className="section-title">OR</div>
+              <div className="linebreak"></div>
+            </div>
+            <div className="loginProvider">
+              <div
+                className="user-login-provider"
+                onClick={handleUserLoginClick}
+              >
+                {/* <FontAwesomeIcon icon={faUserGear} className="icon" /> */}
+                User Login
+              </div>
+              <div className="nav-section--title">
+                <div className="linebreak"></div>
+                <strong className="section-title">
+                  Don't have an account ?
+                </strong>
+                <div className="linebreak"></div>
+              </div>
+              <div
+                className="user-login-provider"
+                onClick={handleRegisterClick}
+              >
+                {/* <FontAwesomeIcon icon={faFileWaveform} className="icon" />{" "} */}
+                Register
+              </div>
+            </div>
+            {message && <div className="message">{message}</div>}
+            {errorMessage && !errorMessage.includes("User not accepted") && (
+              <div className="message errorMessage">
+                <FontAwesomeIcon icon={faExclamationCircle} /> {errorMessage}
+              </div>
+            )}
+            {errorMessage.includes("User not accepted") && (
+              <InfoModal msg="You will be able to login if your registration requests have been approved" />
+            )}
+          </form>
         </div>
-        <div className="nav-section--title">
-          <div className="linebreak"></div>
-          <h2 className="section-title">Don't have an account ?</h2>
-          <div className="linebreak"></div>
-        </div>
-        <div
-          className="style-form user-login-provider"
-          onClick={handleRegisterClick}
-        >
-          <FontAwesomeIcon icon={faFileWaveform} className="icon" /> Register
-        </div>
+      </div>
+      <div className="login-hero">
+        <img src={iphone} alt="" id="iphone-img" className="login-hero--img" />
+        <img src={iphone} alt="" id="iphone-img2" className="login-hero--img" />
       </div>
     </div>
   );

@@ -10,7 +10,8 @@ import Login from "./components/Login";
 import Dashboard from "./components/Dashboard";
 import AdminDashboard from "./components/AdminDashboard";
 import RegisterForm from "./components/RegisterForm";
-import "./App.scss";
+// import "./App.scss";
+import "./styles.scss";
 import AdminLogin from "./components/AdminLogin";
 function App() {
   return (

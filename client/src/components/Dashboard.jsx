@@ -1,178 +1,427 @@
 import React, { useContext, useEffect, useState } from "react";
-import { AuthContext } from "../context/AuthContext";
-import { Navigate, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  faArrowDown,
-  faArrowTrendDown,
-  faArrowTrendUp,
-  faBars,
-  faChevronDown,
-  faCircle,
-  faClose,
-  faDownload,
-  faHand,
-  faList12,
+  faCheck,
+  faUserGear,
   faPowerOff,
-  faUserCircle,
+  faSliders,
+  faX,
+  faBars,
+  faList,
+  faCheckCircle,
+  faTruckLoading,
+  faListCheck,
+  faTableList,
+  faListAlt,
+  faListDots,
+  faListSquares,
+  faReceipt,
+  faUser,
+  faPager,
+  faSearch,
+  faDoorClosed,
+  faArrowAltCircleLeft,
+  faArrowRightFromBracket,
+  faUserFriends,
+  faPlus,
+  faStar,
+  faStarAndCrescent,
+  faEye,
 } from "@fortawesome/free-solid-svg-icons";
-import { toast, ToastContainer } from "react-toastify";
-import DownloadReportsModal from "./DownloadReportsModal";
-import RaiseIssueModal from "./RaiseIssueModal";
+import { Navigate, useNavigate } from "react-router-dom";
+import { AuthContext } from "../context/AuthContext";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import GeneratePO from "./GeneratePO";
+import ItemsTable from "./ItemsTable";
+
+import nshmLogo from "../assets/nshm-logo.png";
+import AddRequisition from "./AddRequisition";
+// import "./App.scss"; // Import your CSS here
 
 function Dashboard() {
-  const { currentUser, navVisible, setNavVisible } = useContext(AuthContext);
-  const [cams, setCams] = useState([]);
-  const [selectedCam, setSelectedCam] = useState(null);
-  const [vehicleUpdates, setVehicleUpdates] = useState([]);
+  const [requests, setRequests] = useState([]);
+  const [purchaseRequisitions, setPurchaseRequisitions] = useState([]);
+  const { currentUser, showItemsTable, setShowItemsTable } =
+    useContext(AuthContext);
   const [error, setError] = useState(false);
-  const [stats, setStats] = useState({
-    weighed: 0,
-    overload: 0,
-    normal: 0,
-  });
-  const [viewMode, setViewMode] = useState("home");
-  const [downloadModalOpen, setDownloadModalOpen] = useState(false);
-  const [issueModalOpen, setIssueModalOpen] = useState(false);
+  const [viewMode, setViewMode] = useState("allRequisitions"); // "manageUsers" or "viewRequests"
+  const [pageViewMode, setPageViewMode] = useState("Requisitions");
+  const [removing, setRemoving] = useState(null);
+  const [selectedRequisition, setSelectedRequisition] = useState(null);
+  const [searchRequisitions, setSearchRequisitions] = useState("");
+  const [filteredRequisitions, setFilteredRequisitions] = useState([]);
+  const [requisitionsModalOpen, setRequisitionsModalOpen] = useState(false);
+  const [showItems, setShowItems] = useState({});
+  const [showingRequisition, setShowingRequisition] = useState([]);
+
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchCams = async () => {
-      try {
-        const response = await axios.get("http://localhost:3001/fetchBridges");
-        setCams(response.data);
-        setSelectedCam(response.data[0]); // Set the first camera as the default
-      } catch (error) {
-        console.error("Error fetching vehicle data:", error);
-        setError(true);
-      }
-    };
+  const fetchPurchaseRequisitions = async () => {
+    try {
+      const response = await axios.get(
+        "http://localhost:3001/admin/purchaseRequisitions"
+      );
+      setPurchaseRequisitions(response.data);
+    } catch (error) {
+      console.error("Error fetching Purchase Requisitions:", error);
+      toast.error("Error fetching Purchase Requisitions");
+    }
+  };
 
-    fetchCams();
-  }, []);
+  const handleGeneratePOClick = (requisition) => {
+    setSelectedRequisition(requisition);
+  };
+
+  const handleCloseModal = () => {
+    setSelectedRequisition(null);
+    setRequisitionsModalOpen(false);
+    fetchPurchaseRequisitions();
+  };
+
+  const openAddRequisitionsModal = () => {
+    setRequisitionsModalOpen(true);
+  };
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const token = localStorage.getItem("token");
+        console.log("token again:", token);
         if (!token) {
           throw new Error("No token stored");
         }
         toast.success(`Welcome back, ${currentUser.name}`);
 
-        // Example API request to a protected route
         const response = await axios.get("http://localhost:3001/dashboard", {
           headers: { Authorization: token },
         });
 
         if (response.data.message === "success") {
           console.log("Logged in");
-        } // Assuming response.data contains user info
+        }
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
+        toast.error("Error fetching dashboard data");
         setError(true);
       }
     };
 
     fetchData();
-  }, [currentUser]);
-
-  useEffect(() => {
-    const fetchVehicleUpdates = async () => {
-      if (selectedCam) {
-        try {
-          const response = await axios.get(
-            "http://localhost:3001/fetchVehicleUpdates",
-            {
-              params: { bridge_name: selectedCam.bridge_name },
-            }
-          );
-
-          const data = response.data;
-          setVehicleUpdates(data);
-
-          // Update stats based on fetched vehicle updates
-          const weighed = data.length;
-          const overload = data.filter(
-            (item) => item.overload_status === "overload"
-          ).length;
-          const normal = weighed - overload;
-
-          setStats({ weighed, overload, normal });
-        } catch (error) {
-          console.error("Error fetching vehicle updates:", error);
-          setError(true);
-        }
+    const fetchRequests = async () => {
+      try {
+        const response = await axios.get(
+          "http://localhost:3001/admin/requests"
+        );
+        setRequests(response.data);
+      } catch (error) {
+        console.error("Error fetching requests:", error);
+        toast.error("Error fetching requests");
       }
     };
+    fetchRequests();
 
-    fetchVehicleUpdates();
-  }, [selectedCam]);
+    fetchPurchaseRequisitions();
+  }, [currentUser]);
 
-  const handleNavButtonClick = () => {
-    setNavVisible(!navVisible);
+  const handleRemove = (id, status, message) => {
+    setRemoving(id);
+    setTimeout(async () => {
+      try {
+        await axios.put(`http://localhost:3001/admin/requests/${id}`, {
+          status,
+        });
+        setRequests((prevRequests) =>
+          prevRequests.map((request) =>
+            request.id === id ? { ...request, status } : request
+          )
+        );
+        toast.success(message);
+      } catch (error) {
+        console.error(`Error updating request status to ${status}:`, error);
+        toast.error(`Error updating request status to ${status}`);
+      } finally {
+        setRemoving(null);
+      }
+    }, 500);
   };
 
-  const handleCamClick = (cam) => {
-    setSelectedCam(cam);
+  const handleAccept = (id) => {
+    handleRemove(
+      id,
+      "accepted",
+      "Request accepted and granted general user role"
+    );
   };
 
-  const handleDownloadReportsClick = () => {
-    setDownloadModalOpen(true);
+  const handleAcceptAsAdmin = (id) => {
+    handleRemove(
+      id,
+      "accepted as admin",
+      "Request accepted and granted admin role"
+    );
   };
-  const handleRaiseIssueClick = () => {
-    setIssueModalOpen(true);
-  };
-  const handleCloseModal = () => {
-    if (downloadModalOpen) setDownloadModalOpen(false);
-    if (issueModalOpen) setIssueModalOpen(false);
+
+  const handleReject = (id) => {
+    handleRemove(id, "rejected", "User request rejected");
   };
 
   const handleLogOut = () => {
     localStorage.removeItem("token");
     navigate("/login");
   };
-  if (!currentUser) {
+
+  const filteredRequests =
+    viewMode === "approvedRequisitions"
+      ? requests.filter((request) => request.status.includes("accepted"))
+      : requests.filter((request) => !request.status.includes("accepted"));
+
+  const handleSearchRequisitions = (e) => {
+    const searchTerm = e.target.value;
+    setSearchRequisitions(searchTerm);
+
+    const filtered = purchaseRequisitions.filter(
+      (requisition) =>
+        (
+          requisition.created_at.split("T")[0].replace(/[^a-zA-Z0-9]/g, "") +
+          requisition.requisition_id
+        )
+          .toString()
+          ?.toLowerCase()
+          ?.includes(searchTerm.toLowerCase().trim()) ||
+        requisition.name
+          .toLowerCase()
+          ?.includes(searchTerm.toLowerCase().trim()) ||
+        requisition.username
+          .toLowerCase()
+          ?.includes(searchTerm.toLowerCase().trim()) ||
+        requisition.status
+          .toLowerCase()
+          ?.includes(searchTerm.toLowerCase().trim()) ||
+        requisition.selected_vendor
+          ?.toLowerCase()
+          ?.includes(searchTerm.toLowerCase()) ||
+        requisition.department
+          ?.toLowerCase()
+          ?.includes(searchTerm.toLowerCase())
+    );
+
+    setFilteredRequisitions(filtered);
+    console.log(filteredRequisitions.length > 0);
+    setViewMode("search");
+  };
+
+  // Logic to filter requisitions based on viewMode
+  useEffect(() => {
+    let filtered = [];
+
+    if (viewMode === "pendingRequisitions") {
+      filtered = purchaseRequisitions.filter(
+        (requisition) =>
+          (requisition.status.includes("pending") ||
+            requisition.status.includes("null")) &&
+          requisition.name === currentUser.name
+      );
+    } else if (viewMode === "approvedRequisitions") {
+      filtered = purchaseRequisitions.filter(
+        (requisition) =>
+          requisition.status.includes("approved") &&
+          requisition.name === currentUser.name
+      );
+    } else if (viewMode === "allRequisitions") {
+      filtered = purchaseRequisitions.filter(
+        (requisition) => requisition.name === currentUser.name
+      );
+    }
+    filtered.sort((a, b) => b.requisition_id - a.requisition_id);
+
+    setFilteredRequisitions(filtered);
+  }, [viewMode, purchaseRequisitions, currentUser?.name]);
+
+  if (!currentUser || !currentUser.name) {
     return <Navigate to="/login" />;
   }
 
   return (
-    <div className="dashboard">
+    <div className="admin-dashboard">
       <nav className="dashboard--navbar">
-        <h2>
-          <i>POS</i>
-          <span className="wordbreak">.</span>Dashboard
-        </h2>
-        <div className={`inner-nav ${navVisible ? "visible" : "hidden"}`}>
-          <div className="home" onClick={() => setViewMode("home")}>
-            Home
+        <div className="title--admin-panel">
+          <h1 id="organization-name">NSHM Kolkata</h1>
+          <span id="system-title">Purchase Order Portal</span>
+          <div className="linebreak"></div>
+          <p>Admin Panel</p>
+          <p className="role">Your role : user</p>
+        </div>
+        <div className="linebreak"></div>
+        <div className="inner-nav nav">
+          <div
+            className={`manage-users ${
+              pageViewMode === "Requisitions" ? "active" : ""
+            }`}
+            onClick={() => {
+              setPageViewMode("Requisitions");
+              setViewMode("allRequisitions");
+            }}
+          >
+            <FontAwesomeIcon icon={faUserGear} />
+            Requisitions
           </div>
-          <div className="home" onClick={() => setViewMode("about")}>
-            About
+
+          <div
+            className={`view-detailed-dashboard ${
+              pageViewMode === "dashboard" ? "active" : ""
+            }`}
+            onClick={() => setPageViewMode("dashboard")}
+          >
+            <FontAwesomeIcon icon={faPager} />
+            Dashboard
           </div>
-          <div className="home" onClick={() => setViewMode("contact")}>
-            Contact
-          </div>
-          {/* <div className="">View detailed dashboard</div> */}
           <div className="button-log-out" onClick={handleLogOut}>
-            Log Out <FontAwesomeIcon icon={faPowerOff} />
+            <FontAwesomeIcon icon={faArrowRightFromBracket} />
+            Log Out
           </div>
         </div>
-        <FontAwesomeIcon
-          icon={navVisible ? faClose : faBars}
-          className="hamburg"
-          onClick={handleNavButtonClick}
-        />
+        <div className="linebreak"></div>
+        <div className="nav-options nav">
+          {/* Todo : Change to reusable component - NavSection.jsx; Start of component -> */}
+          {pageViewMode && pageViewMode === "Requisitions" && (
+            <>
+              <div
+                className={viewMode === "allRequisitions" ? "active" : ""}
+                onClick={() => setViewMode("allRequisitions")}
+              >
+                <FontAwesomeIcon icon={faList} />
+                All
+              </div>
+              <div
+                className={viewMode === "pendingRequisitions" ? "active" : ""}
+                onClick={() => setViewMode("pendingRequisitions")}
+              >
+                <FontAwesomeIcon icon={faTableList} />
+                Pending
+              </div>
+              <div
+                className={viewMode === "approvedRequisitions" ? "active" : ""}
+                onClick={() => setViewMode("approvedRequisitions")}
+              >
+                <FontAwesomeIcon icon={faListCheck} />
+                Ready for PO generation
+              </div>
+            </>
+          )}
+        </div>
+        {/* <FontAwesomeIcon icon={faBars} className="hamburg" /> */}
       </nav>
-      {error && <p style={{ color: "white" }}>Error fetching dashboard data</p>}
+      {pageViewMode && pageViewMode === "dashboard" && (
+        <div className="container">
+          <div className="nav">Nothing here yet</div>
+        </div>
+      )}
+      {pageViewMode && pageViewMode === "Requisitions" && (
+        <div className="container">
+          <div className="nav">
+            <p>{currentUser.name}</p>
+            <FontAwesomeIcon icon={faUser} id="profile-icon" />
+          </div>
+          <h1 className="section-title">Your Requisitions</h1>
+          <div className="search-container">
+            <label htmlFor="search-field" id="search-field-container">
+              <FontAwesomeIcon icon={faSearch} className="search-icon" />
+              <input
+                type="text"
+                name="search"
+                id="search-field"
+                placeholder="Search Requisition"
+                value={searchRequisitions}
+                onChange={handleSearchRequisitions}
+              />
+            </label>
+            <div className="buttons">
+              <div
+                className="btn--add-new add-new-requisition"
+                onClick={openAddRequisitionsModal}
+              >
+                <FontAwesomeIcon icon={faPlus} className="fa-icon plus-icon" />
+                New
+              </div>
+            </div>
+          </div>
+          <div className="table-container">
+            {!filteredRequisitions.length && (
+              <p className="no-results">Nothing here yet</p>
+            )}
+            {filteredRequisitions.length > 0 && (
+              <table className="requisitions-table">
+                <thead>
+                  <tr>
+                    <th>Request ID</th>
+                    <th>Created At</th>
+                    <th>Department</th>
+                    <th>Items</th>
+                    <th>Vendor</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredRequisitions.map((requisition) => (
+                    <tr
+                      key={requisition.id}
+                      className={removing === requisition.id ? "fade-out" : ""}
+                    >
+                      {/* Requisition ID */}
+                      <td>
+                        {requisition.created_at
+                          .split("T")[0]
+                          .replace(/[^a-zA-Z0-9]/g, "") +
+                          requisition.requisition_id}
+                      </td>
+                      {/* Requisition Created At */}
+                      <td>
+                        {new Date(requisition.created_at).toLocaleString()}
+                      </td>
+                      <td>
+                        {requisition.department || "No Department Selected"}
+                      </td>
+                      {/* Show Items Toggle */}
+                      <td>
+                        <button
+                          className="button-accept show-items"
+                          onClick={() => {
+                            setShowItems(!showItems);
+                            setShowingRequisition(requisition);
+                            setShowItemsTable(true);
+                          }}
+                        >
+                          {" "}
+                          <FontAwesomeIcon icon={faEye} /> Show Items
+                        </button>
+                      </td>
+                      {requisition.selected_vendor &&
+                      requisition.selected_vendor !== "NULL" ? (
+                        <td>{requisition.selected_vendor}</td>
+                      ) : (
+                        <td>No vendor assigned</td>
+                      )}
+                      <td>{requisition.status}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        </div>
+      )}
+      {pageViewMode && pageViewMode === "Detailed Dashboard" && (
+        <div className="container">
+          <div className="nav">Nothing here yet</div>
+        </div>
+      )}
+      {showItemsTable && <ItemsTable requisition={showingRequisition} />}
 
-      <ToastContainer position="bottom-right" className="toast-container" />
-      <DownloadReportsModal
-        isOpen={downloadModalOpen}
-        onClose={handleCloseModal}
-      />
-      <RaiseIssueModal isOpen={issueModalOpen} onClose={handleCloseModal} />
+      {requisitionsModalOpen && <AddRequisition onClose={handleCloseModal} />}
+
+      <ToastContainer className="toast-container" position="bottom-right" />
     </div>
   );
 }

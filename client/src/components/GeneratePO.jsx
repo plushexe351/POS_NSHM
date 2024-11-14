@@ -2,7 +2,7 @@ import React, { useContext, useState } from "react";
 import html2pdf from "html2pdf.js";
 import { AuthContext } from "../context/AuthContext";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTrash } from "@fortawesome/free-solid-svg-icons";
+import { faPlus, faTrash } from "@fortawesome/free-solid-svg-icons";
 
 const GeneratePO = ({ requisition, onClose }) => {
   const [unitPrices, setUnitPrices] = useState(requisition.items.map(() => 0));
@@ -71,46 +71,21 @@ const GeneratePO = ({ requisition, onClose }) => {
 
   const handleDownloadReceipt = () => {
     const receiptElement = document.getElementById("receipt");
-    const opt = {
+    const options = {
       margin: 1,
       filename: "receipt.pdf",
       html2canvas: { scale: 2 },
       jsPDF: { unit: "in", format: "letter", orientation: "portrait" },
     };
 
-    // Create a temporary HTML with styles
-    const receiptHtml = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <link rel="stylesheet" href="/path/to/your/styles.css">
-      </head>
-      <body>
-        ${receiptElement.innerHTML}
-      </body>
-      </html>
-    `;
-
-    const tempElement = document.createElement("div");
-    tempElement.innerHTML = receiptHtml;
-    document.body.appendChild(tempElement);
-
-    html2pdf()
-      .from(tempElement)
-      .set(opt)
-      .save()
-      .then(() => {
-        document.body.removeChild(tempElement);
-      });
+    html2pdf().set(options).from(receiptElement).save();
   };
 
   return (
     <div className="receipt-modal">
       <div className="receipt-modal-content">
         <div className="receipt-form">
-          <span className="close-button" onClick={onClose}>
-            close
-          </span>
+          <div className="close-button" onClick={onClose}></div>
           <h2>Generate PO for {requisition.name}</h2>
           <div className="linebreak"></div>
           <div className="item-prices">
@@ -126,7 +101,7 @@ const GeneratePO = ({ requisition, onClose }) => {
             ))}
           </div>
           <div className="discount">
-            <label>Select Discount Type:</label>
+            <label>Select Discount Type :</label>
             <div>
               <input
                 type="radio"
@@ -134,7 +109,7 @@ const GeneratePO = ({ requisition, onClose }) => {
                 checked={discountType === "unit"}
                 onChange={(e) => setDiscountType(e.target.value)}
               />
-              Discount per Unit
+              Discount per Item
               <input
                 type="radio"
                 value="total"
@@ -147,11 +122,14 @@ const GeneratePO = ({ requisition, onClose }) => {
               type="number"
               value={discountValue}
               onChange={(e) => setDiscountValue(e.target.value)}
+              placeholder="Enter discount value"
             />
           </div>
 
           <div className="tax-container">
-            <button onClick={handleAddTax}>Add Tax</button>
+            <button onClick={handleAddTax}>
+              Add Tax <FontAwesomeIcon icon={faPlus} />
+            </button>
             {taxes.map((tax, index) => (
               <div key={index} className="tax">
                 <input
@@ -178,22 +156,24 @@ const GeneratePO = ({ requisition, onClose }) => {
           </div>
 
           <div className="termsContainer">
-            <button onClick={handleAddTerm}>Add Terms & Conditions</button>
-            <div className="terms">
-              {terms.map((term, index) => (
-                <div key={index} className="term">
-                  <input
-                    type="text"
-                    placeholder="Enter term"
-                    value={term}
-                    onChange={(e) => handleTermChange(index, e.target.value)}
-                  />
-                  <button onClick={() => handleDeleteTerm(index)}>
-                    <FontAwesomeIcon icon={faTrash} />
-                  </button>
-                </div>
-              ))}
-            </div>
+            <button onClick={handleAddTerm}>
+              Add Terms & Conditions <FontAwesomeIcon icon={faPlus} />
+            </button>
+            {/* <div className="terms"> */}
+            {terms.map((term, index) => (
+              <div key={index} className="term">
+                <input
+                  type="text"
+                  placeholder="Enter term"
+                  value={term}
+                  onChange={(e) => handleTermChange(index, e.target.value)}
+                />
+                <button onClick={() => handleDeleteTerm(index)}>
+                  <FontAwesomeIcon icon={faTrash} />
+                </button>
+              </div>
+            ))}
+            {/* </div>  */}
           </div>
 
           <div className="linebreak"></div>
@@ -226,6 +206,8 @@ const GeneratePO = ({ requisition, onClose }) => {
             <thead>
               <tr>
                 <th>Item Name</th>
+                <th>Item Category</th>
+                <th>Specifications</th>
                 <th>Quantity</th>
                 <th>Unit Price</th>
                 <th>Total</th>
@@ -235,6 +217,8 @@ const GeneratePO = ({ requisition, onClose }) => {
               {requisition.items.map((item, index) => (
                 <tr key={index}>
                   <td>{item.name}</td>
+                  <td>{item.category}</td>
+                  <td>{item.specification}</td>
                   <td>{item.quantity}</td>
                   <td>INR {unitPrices[index]}</td>
                   <td>INR {unitPrices[index] * item.quantity}</td>
