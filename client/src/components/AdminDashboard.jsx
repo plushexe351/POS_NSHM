@@ -188,8 +188,6 @@ function AdminDashboard() {
       }
     } catch (error) {
       console.error("Error fetching dashboard data:", error);
-      toast.error("Error fetching dashboard data");
-      setError(true);
     }
   };
 
