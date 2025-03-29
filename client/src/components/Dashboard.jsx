@@ -38,6 +38,9 @@ import ItemsTable from "./ItemsTable";
 
 import nshmLogo from "../assets/nshm-logo.png";
 import AddRequisition from "./AddRequisition";
+import StatusPieChart from "./StatusPieChart";
+import { AnimatePresence } from "framer-motion";
+import REACT_APP_API_BASE_URL from "../config";
 // import "./App.scss"; // Import your CSS here
 
 function Dashboard() {
@@ -61,7 +64,7 @@ function Dashboard() {
   const fetchPurchaseRequisitions = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:3001/admin/purchaseRequisitions"
+        `${REACT_APP_API_BASE_URL}/admin/purchaseRequisitions`
       );
       setPurchaseRequisitions(response.data);
     } catch (error) {
@@ -87,16 +90,18 @@ function Dashboard() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const token = localStorage.getItem("token");
+        const token = sessionStorage.getItem("token");
         console.log("token again:", token);
         if (!token) {
           throw new Error("No token stored");
         }
-        toast.success(`Welcome back, ${currentUser.name}`);
 
-        const response = await axios.get("http://localhost:3001/dashboard", {
-          headers: { Authorization: token },
-        });
+        const response = await axios.get(
+          `${REACT_APP_API_BASE_URL}/dashboard`,
+          {
+            headers: { Authorization: token },
+          }
+        );
 
         if (response.data.message === "success") {
           console.log("Logged in");
@@ -112,7 +117,7 @@ function Dashboard() {
     const fetchRequests = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:3001/admin/requests"
+          `${REACT_APP_API_BASE_URL}/admin/requests`
         );
         setRequests(response.data);
       } catch (error) {
@@ -129,7 +134,7 @@ function Dashboard() {
     setRemoving(id);
     setTimeout(async () => {
       try {
-        await axios.put(`http://localhost:3001/admin/requests/${id}`, {
+        await axios.put(`${REACT_APP_API_BASE_URL}/admin/requests/${id}`, {
           status,
         });
         setRequests((prevRequests) =>
@@ -265,10 +270,10 @@ function Dashboard() {
             }}
           >
             <FontAwesomeIcon icon={faUserGear} />
-            Requisitions
+            Dashboard
           </div>
 
-          <div
+          {/* <div
             className={`view-detailed-dashboard ${
               pageViewMode === "dashboard" ? "active" : ""
             }`}
@@ -276,7 +281,7 @@ function Dashboard() {
           >
             <FontAwesomeIcon icon={faPager} />
             Dashboard
-          </div>
+          </div> */}
           <div className="button-log-out" onClick={handleLogOut}>
             <FontAwesomeIcon icon={faArrowRightFromBracket} />
             Log Out
@@ -321,10 +326,104 @@ function Dashboard() {
       {pageViewMode && pageViewMode === "Requisitions" && (
         <div className="container">
           <div className="nav">
-            <p>{currentUser.name}</p>
             <FontAwesomeIcon icon={faUser} id="profile-icon" />
+            <p>{currentUser.name}</p>
           </div>
           <h1 className="section-title">Your Requisitions</h1>
+          {purchaseRequisitions.length > 0 && (
+            <div className="quick-analytics">
+              <StatusPieChart
+                className="quick-analytics--pie"
+                purchaseRequisitions={purchaseRequisitions}
+              />
+              {/* <div className="analytics-container quick-analytics--untouched-requisitions">
+              <div className="quick-analytics--title">Require Action</div>
+              <div className="quick-analytics--metric-value">
+                {deadlineCounts.red}
+              </div>
+            </div> */}
+              <div className="analytics-container quick-analytics--drafted-requisitions">
+                <div className="quick-analytics--title">
+                  Ready for PO Generation
+                </div>
+                <div className="quick-analytics--metric-value">
+                  {
+                    filteredRequisitions.filter(
+                      (req) => req.status === "approved"
+                    ).length
+                  }
+                </div>
+              </div>
+              <div className="analytics-container quick-analytics--all-requisitions">
+                <div className="quick-analytics--title">All</div>
+                <div className="quick-analytics--metric-value">
+                  {filteredRequisitions.length}
+                </div>
+              </div>
+              <div className="analytics-container quick-analytics--pending-requisitions">
+                <div className="quick-analytics--title">Pending</div>
+                <div className="quick-analytics--metric-value">
+                  {
+                    filteredRequisitions.filter(
+                      (req) => req.status === "pending"
+                    ).length
+                  }
+                </div>
+              </div>
+              <div className="analytics-container quick-analytics--accepted-requisitions">
+                <div className="quick-analytics--title">Accepted</div>
+                <div className="quick-analytics--metric-value">
+                  {
+                    filteredRequisitions.filter(
+                      (req) => req.status === "approved"
+                    ).length
+                  }
+                </div>
+              </div>
+
+              <div className="analytics-container quick-analytics--created-requisitions">
+                <div className="quick-analytics--title">Created</div>
+                <div className="quick-analytics--metric-value">
+                  {
+                    filteredRequisitions.filter(
+                      (req) => req.status === "approved"
+                    ).length
+                  }
+                </div>
+              </div>
+              <div className="analytics-container quick-analytics--rejected-requisitions">
+                <div className="quick-analytics--title">Rejected</div>
+                <div className="quick-analytics--metric-value">
+                  {
+                    filteredRequisitions.filter(
+                      (req) => req.status === "rejected"
+                    ).length
+                  }
+                </div>
+              </div>
+              <div className="analytics-container quick-analytics--closed-requisitions">
+                <div className="quick-analytics--title">Closed</div>
+                <div className="quick-analytics--metric-value">
+                  {
+                    filteredRequisitions.filter(
+                      (req) => req.status === "closed"
+                    ).length
+                  }
+                </div>
+              </div>
+              <div className="analytics-container quick-analytics--completed-requisitions">
+                <div className="quick-analytics--title">Completed</div>
+                <div className="quick-analytics--metric-value">
+                  {
+                    filteredRequisitions.filter(
+                      (req) => req.status === "complete"
+                    ).length
+                  }
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="search-container">
             <label htmlFor="search-field" id="search-field-container">
               <FontAwesomeIcon icon={faSearch} className="search-icon" />
@@ -417,11 +516,12 @@ function Dashboard() {
           <div className="nav">Nothing here yet</div>
         </div>
       )}
-      {showItemsTable && <ItemsTable requisition={showingRequisition} />}
-
-      {requisitionsModalOpen && <AddRequisition onClose={handleCloseModal} />}
-
-      <ToastContainer className="toast-container" position="bottom-right" />
+      <AnimatePresence>
+        {showItemsTable && <ItemsTable requisition={showingRequisition} />}
+      </AnimatePresence>
+      <AnimatePresence>
+        {requisitionsModalOpen && <AddRequisition onClose={handleCloseModal} />}
+      </AnimatePresence>
     </div>
   );
 }

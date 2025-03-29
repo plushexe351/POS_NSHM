@@ -13,6 +13,8 @@ import InfoModal from "./InfoModal";
 import iphone from "../assets/iphone.png";
 import nshmLogo from "../assets/nshm-logo.png";
 import mac from "../assets/mac.png";
+import { toast } from "react-toastify";
+import REACT_APP_API_BASE_URL from "../config";
 
 function Login() {
   const [username, setUsername] = useState("");
@@ -32,15 +34,16 @@ function Login() {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post("http://localhost:3001/login", {
+      const response = await axios.post(`${REACT_APP_API_BASE_URL}/login`, {
         username,
         password,
       });
       if (response.data.token) {
-        localStorage.setItem("token", response.data.token); // Store token in localStorage
+        sessionStorage.setItem("token", response.data.token);
         setCurrentUser(response.data.user);
-        // navigate("/dashboard");
         navigate("/dashboard");
+        toast.success(`Welcome back, ${response.data.user.name}`);
+
         setErrorMessage("");
       }
     } catch (error) {

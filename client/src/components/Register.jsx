@@ -9,6 +9,7 @@ import {
   faX,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import REACT_APP_API_BASE_URL from "../config";
 
 function Register() {
   const [username, setUsername] = useState("");
@@ -34,7 +35,7 @@ function Register() {
   const handleRegister = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post("http://localhost:3001/register", {
+      const response = await axios.post(`${REACT_APP_API_BASE_URL}/register`, {
         name,
         username,
         email,

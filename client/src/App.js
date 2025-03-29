@@ -13,6 +13,9 @@ import RegisterForm from "./components/RegisterForm";
 // import "./App.scss";
 import "./styles.scss";
 import AdminLogin from "./components/AdminLogin";
+import { toast, ToastContainer } from "react-toastify";
+import { useContext } from "react";
+import { AuthContext } from "./context/AuthContext";
 function App() {
   return (
     <Router>
@@ -28,6 +31,16 @@ function App() {
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
         </Routes>
       </div>
+      <ToastContainer
+        position="bottom-center"
+        theme="light"
+        closeButton={false}
+        autoClose={3000}
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
     </Router>
   );
 }

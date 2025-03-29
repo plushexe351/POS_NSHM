@@ -64,6 +64,15 @@
     transform: scale(0.8);
   }
 }
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: none;
+}
 *::-webkit-scrollbar {
   background-color: transparent;
   width: 5px;
@@ -86,10 +95,23 @@
   border-radius: 3rem;
   opacity: 0.5;
 }
-.toast-container .Toastify__toast {
+.Toastify__toast-container {
+  max-width: 100%;
+  width: auto;
+  height: max-content;
+  * {
+    margin-block: 0;
+  }
+}
+.Toastify__toast {
   font-family: Montserrat;
+  width: auto;
   margin: 1rem;
+  max-height: max-content;
+  font-size: 0.9rem;
   border-radius: 1rem;
+  max-width: 100vw;
+  font-weight: 500;
 }
 
 html {
@@ -357,7 +379,7 @@ body {
       background-color: rgba(255, 255, 255, 0.4);
     }
     .title--admin-panel {
-      margin-top: 0;
+      margin-top: 1rem;
       border-radius: 1rem;
       padding-block: 1rem;
       background-color: #cfd2d921;
@@ -384,6 +406,7 @@ body {
         margin-top: 0.1rem;
       }
     }
+
     .inner-nav,
     .nav {
       display: flex;
@@ -420,17 +443,24 @@ body {
 
     .nav {
       display: flex;
-      justify-content: end;
+      justify-content: start;
       align-items: center;
       gap: 1rem;
       padding: 1rem;
       background-color: #1a191f;
       color: white;
       width: 100%;
+      #notification-icon {
+        cursor: pointer;
+      }
+
+      .info {
+        margin-right: auto;
+        cursor: pointer;
+      }
 
       .notification-bell {
         position: relative;
-        margin-right: auto;
         font-size: 1.1rem;
         .notification-dot {
           position: absolute;
@@ -441,6 +471,82 @@ body {
           background-color: orange;
           border: 2px solid black;
           border-radius: 50%;
+        }
+      }
+
+      .notification-panel,
+      .info-panel {
+        position: absolute;
+        display: flex;
+        flex-direction: column;
+        // padding: 1rem;
+        background-color: #1c1d22;
+        backdrop-filter: blur(1rem);
+        // height: 300px;
+        width: 300px;
+        box-shadow: 0 0 1rem rgba(0, 0, 0, 0.2);
+        border-radius: 1rem;
+        overflow: auto;
+        z-index: 1;
+        header {
+          display: flex;
+          font-size: 0.9rem;
+          justify-content: space-between;
+          align-items: center;
+          font-weight: 600;
+          gap: 1rem;
+          padding: 1rem 1rem 0.5rem 1rem;
+          border-bottom: 1px solid rgba(211, 211, 211, 0.143);
+          span {
+            color: orange;
+            font-size: 0.8rem;
+            cursor: pointer;
+          }
+        }
+
+        > .notification-container {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          font-size: 0.8rem;
+          .notification {
+            padding: 1rem;
+            border-bottom: 1px solid rgba(211, 211, 211, 0.043);
+            &.new {
+              background-color: #25272d;
+            }
+            &.new-requisition {
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              gap: 0.5rem;
+            }
+            .created-by-initial {
+              flex-shrink: 0;
+              display: grid;
+              place-content: center;
+              text-transform: uppercase;
+              height: 30px;
+              width: 30px;
+              border-radius: 50%;
+              background-color: orange;
+              color: white;
+              font-weight: 800;
+              font-size: 1.05rem;
+            }
+            .date {
+              margin-top: 0.5rem;
+              color: rgb(165, 165, 165);
+            }
+          }
+          .latest-title {
+            padding: 0.5rem 0.5rem 0 0.5rem;
+            text-transform: uppercase;
+            font-size: 0.6rem;
+            font-weight: 800;
+            background-color: #25272d;
+            color: rgb(165, 165, 165);
+          }
         }
       }
 
@@ -465,16 +571,18 @@ body {
       }
     }
   }
-  .quick-analytics {
+  .quick-analytics,
+  .departments-container {
     display: flex;
     margin: 1rem;
     padding-bottom: 0.5rem;
     gap: 0.5rem;
     overflow-x: auto;
 
-    > .analytics-container {
+    > .analytics-container,
+    .department {
       flex-shrink: 0;
-      width: 150px;
+      min-width: 150px;
       min-width: max-content;
       height: 90px;
       background-color: #3c404c;
@@ -487,8 +595,11 @@ body {
       flex-direction: column;
       gap: 0.5rem;
 
-      .quick-analytics--title {
+      .quick-analytics--title,
+      .department-title,
+      .department-description {
         color: white;
+        text-transform: capitalize;
       }
       .quick-analytics--metric-value {
         font-size: 1.5rem;
@@ -496,6 +607,17 @@ body {
         font-weight: 600;
       }
     }
+    .department {
+      flex: 1 1 calc(33.33%);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-weight: 500;
+      font-size: 1rem;
+    }
+  }
+  .departments-container {
+    flex-wrap: wrap !important;
   }
   .section-title {
     color: white;
@@ -577,19 +699,6 @@ body {
   .requisition-id-container {
     * {
       display: inline-block;
-    }
-    .action-indicator-icon {
-      margin-right: 0.5rem;
-      animation: shrink-in-out 1s linear infinite;
-      &.yellow {
-        color: orange;
-      }
-      &.red {
-        color: red;
-      }
-      &.green {
-        color: #2fc86e;
-      }
     }
   }
   .action-indicator {
@@ -690,7 +799,10 @@ body {
 }
 
 .receipt-modal,
-.add-requisition-modal {
+.add-requisition-modal,
+.add-department-modal,
+.add-category-modal,
+.add-vendor-modal {
   position: fixed;
   top: 0;
   left: 0;
@@ -733,76 +845,36 @@ body {
       flex: 1;
       min-width: 300px;
     }
+    #receipt {
+      flex: 1.5;
+    }
 
     .receipt-form {
       height: 100%;
       overflow: scroll;
       .item-prices {
-        margin-top: 1rem;
+        margin-block: 0;
         > * {
-          margin-bottom: 1rem;
+          margin-bottom: 0em;
         }
+      }
+      .unit-price {
+        margin-bottom: 0rem;
       }
       .item-price {
         display: flex;
-        // justify-content: center;
-        align-items: center;
-        gap: 1rem;
-        > * {
-          flex: 1;
-        }
-      }
-    }
-    #receipt {
-      border: 1px solid rgba(0, 0, 0, 0.1);
-      box-shadow: 0 0 2rem rgba(0, 0, 0, 0.073);
-      height: 100%;
-      background-color: white;
-      padding: 1rem;
-      border-radius: 0.4rem;
-      color: black;
-      display: flex;
-      justify-content: start;
-      flex-direction: column;
-      gap: 0.3rem;
-      overflow: scroll;
-      font-family: Arial, Helvetica, sans-serif;
-      table {
-        margin: 0;
-        border-radius: 0;
-        background-color: white;
-        color: black;
-        thead,
-        th,
-        td {
-          opacity: unset;
-          background-color: white;
-        }
-      }
-
-      ul {
-        all: unset;
-        display: flex;
         flex-direction: column;
-        // justify-content: center;
-        // align-items: end;
-        gap: 1rem;
-      }
-      h3,
-      p {
-        // font-weight: 600;
-        width: 100%;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-      }
-      p {
-        font-weight: 500;
-        span {
-          font-weight: normal;
+        gap: 0;
+        margin-bottom: 0;
+        // border-bottom: 1px solid red;
+        > * {
+          display: flex;
+          justify-content: center;
+          align-items: center;
         }
       }
     }
+
     .btn-download-receipt {
       text-align: center;
       width: max-content;
@@ -830,13 +902,15 @@ body {
     }
   }
   .unit-price,
-  .discount {
-    margin-block: 1rem;
+  .discount,
+  .tax,
+  .charges {
+    margin-block: 0.5rem;
     width: 100%;
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 1rem;
+    gap: 0.5rem;
     flex-direction: column;
     > * {
       width: 100%;
@@ -846,6 +920,9 @@ body {
       align-items: center;
       gap: 1rem;
     }
+  }
+  .discount {
+    margin-bottom: 1rem;
   }
 
   .tax-container,
@@ -891,6 +968,7 @@ body {
       }
     }
   }
+
   input,
   select {
     border: 1px solid gray;
@@ -951,7 +1029,20 @@ body {
     }
   }
 }
-
+// .departments-container {
+//   margin: 1rem;
+//   display: flex;
+//   justify-content: center;
+//   align-items: center;
+//   gap: 1rem;
+//   .department {
+//     width: 300px;
+//     height: 200px;
+//     padding: 1rem;
+//     background-color: white;
+//     border-radius: 0.4rem;
+//   }
+// }
 .no-results {
   opacity: 0.3;
   color: white;
@@ -959,7 +1050,10 @@ body {
   text-align: center;
 }
 
-.requisition-modal-content {
+.requisition-modal-content,
+.department-modal-content,
+.category-modal-content,
+.vendor-modal-content {
   max-height: 90vh;
   box-shadow: 0 0 3rem black;
   border: 1px solid rgba(255, 255, 255, 0.13);
@@ -972,7 +1066,10 @@ body {
   backdrop-filter: blur(3rem);
   -webkit-backdrop-filter: blur(3rem);
   padding: 1rem;
-  .requisition-form {
+  .requisition-form,
+  .department-form,
+  .category-form,
+  .vendor-form {
     display: flex;
     justify-content: center;
     align-content: center;
@@ -1095,5 +1192,49 @@ body {
   table {
     margin: 0;
     max-width: 400px;
+  }
+}
+
+.RequisitionsCharts {
+  padding: 1rem;
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  p {
+    font-size: 1.5rem;
+    font-weight: 500;
+  }
+
+  > * {
+    width: 500px;
+    flex: 1;
+    display: flex;
+    gap: 1rem;
+    max-width: 100%;
+    flex-direction: column;
+    padding: 1rem;
+    border-radius: 1rem;
+    background-color: #3c404caf;
+    border: 1px solid rgba(255, 255, 255, 0.13);
+    &:last-of-type {
+      min-width: 100%;
+    }
+  }
+}
+
+.action-indicator-icon {
+  margin-right: 0.5rem;
+  animation: shrink-in-out 1s linear infinite;
+  &.yellow {
+    color: orange;
+  }
+  &.red {
+    color: red;
+  }
+  &.green {
+    color: #2fc86e;
   }
 }

@@ -1,5 +1,6 @@
 import React, { useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
+import { motion } from "framer-motion";
 
 const ItemsTable = ({ requisition }) => {
   const { setShowItemsTable } = useContext(AuthContext);
@@ -8,8 +9,13 @@ const ItemsTable = ({ requisition }) => {
     setShowItemsTable(false);
   };
   return (
-    <div className="items-table-modal">
-      <div className="container">
+    <motion.div className="items-table-modal" exit={{ opacity: 0 }}>
+      <motion.div
+        className="container"
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.8, translateY: 200 }}
+      >
         <div className="btn--close-items-table" onClick={closeItemsTable}></div>
         <h2>Items Table</h2>
         <div className="linebreak"></div>
@@ -47,8 +53,8 @@ const ItemsTable = ({ requisition }) => {
               ))}
           </tbody>
         </table>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 };
 

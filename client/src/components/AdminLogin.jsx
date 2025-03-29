@@ -14,6 +14,8 @@ import iphone from "../assets/iphone.png";
 import nshmLogo from "../assets/nshm-logo.png";
 import mac from "../assets/mac.png";
 import InfoModal from "./InfoModal";
+import { toast } from "react-toastify";
+import REACT_APP_API_BASE_URL from "../config";
 
 function AdminLogin() {
   const [username, setUsername] = useState("");
@@ -32,16 +34,20 @@ function AdminLogin() {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post("http://localhost:3001/adminLogin", {
-        username,
-        password,
-      });
+      const response = await axios.post(
+        `${REACT_APP_API_BASE_URL}/adminLogin`,
+        {
+          username,
+          password,
+        }
+      );
       if (response.data.token) {
-        localStorage.setItem("token", response.data.token); // Store token in localStorage
+        sessionStorage.setItem("token", response.data.token);
+        sessionStorage.setItem("user", JSON.stringify(response.data.user)); // Persist user data
         console.log("token:", response.data.token);
         setCurrentUser(response.data.user);
-        // navigate("/dashboard");
         navigate("/admin/dashboard");
+        toast.success(`Welcome back, ${response.data.user.name}`);
         setErrorMessage("");
       }
     } catch (error) {

@@ -7,6 +7,8 @@ export const AuthContextProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [navVisible, setNavVisible] = useState(false);
   const [showItemsTable, setShowItemsTable] = useState(false);
+  const [vendors, setVendors] = useState("");
+  const [writingToolsMode, setWritingToolsMode] = useState(false);
   // const [registerStatus, setRegisterStatus] = useState(false);
 
   return (
@@ -18,6 +20,8 @@ export const AuthContextProvider = ({ children }) => {
         setNavVisible,
         setShowItemsTable,
         showItemsTable,
+        writingToolsMode,
+        setWritingToolsMode,
       }}
     >
       {children}

@@ -4,94 +4,91 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faCheck,
   faUserGear,
-  faPowerOff,
   faSliders,
   faX,
-  faBars,
   faList,
-  faCheckCircle,
-  faTruckLoading,
   faListCheck,
   faTableList,
-  faListAlt,
-  faListDots,
-  faListSquares,
-  faReceipt,
-  faUser,
-  faPager,
   faSearch,
-  faDoorClosed,
-  faArrowAltCircleLeft,
   faArrowRightFromBracket,
   faUserFriends,
   faPlus,
-  faObjectGroup,
-  faSquareCheck,
-  faSitemap,
   faChartSimple,
-  faDownload,
   faArrowDown,
-  faCircleCheck,
   faPencil,
   faFileDownload,
   faEye,
-  faInfoCircle,
-  faExclamationCircle,
   faClock,
+  faTags,
+  faLayerGroup,
+  faTruck,
 } from "@fortawesome/free-solid-svg-icons";
-import { Navigate, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
-import { ToastContainer, toast } from "react-toastify";
+import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import GeneratePO from "./GeneratePO";
-import nshmLogo from "../assets/nshm-logo.png";
+
 import AddRequisition from "./AddRequisition";
 import ItemsTable from "./ItemsTable";
 import StatusPieChart from "./StatusPieChart";
 import ProfileNavbar from "./ProfileNavbar";
-import html2pdf from "html2pdf.js";
+
 import * as XLSX from "xlsx";
+import AddDepartment from "./AddDepartment";
+import AddCategory from "./AddCategory";
+import AddVendor from "./AddVendor";
+import RequisitionsCharts from "./RequisitionsCharts";
+
+import { AnimatePresence } from "framer-motion";
+import WritingTools from "./WritingTools";
+
+import REACT_APP_API_BASE_URL from "../config";
 
 function AdminDashboard() {
   const [requests, setRequests] = useState([]);
   const [purchaseRequisitions, setPurchaseRequisitions] = useState([]);
-  const { currentUser, showItemsTable, setShowItemsTable } =
-    useContext(AuthContext);
+  const [departments, setDepartments] = useState("");
+  const [vendors, setVendors] = useState("");
+  const [categories, setCategories] = useState("");
+  const {
+    setCurrentUser,
+    showItemsTable,
+    setShowItemsTable,
+    writingToolsMode,
+    setWritingToolsMode,
+  } = useContext(AuthContext);
   const [error, setError] = useState(false);
   const [viewMode, setViewMode] = useState("allRequisitions"); // "manageUsers" or "viewRequests"
   const [pageViewMode, setPageViewMode] = useState("Manage Requisitions");
-  const [removing, setRemoving] = useState(null);
+  const [updating, setupdating] = useState(null);
   const [selectedRequisition, setSelectedRequisition] = useState(null);
   const [searchRequisitions, setSearchRequisitions] = useState("");
+  const [searchUsers, setSearchUsers] = useState("");
+  const [searchDepartments, setSearchDepartments] = useState("");
+  const [searchVendors, setSearchVendors] = useState("");
+  const [searchCategories, setSearchCategories] = useState("");
+  const [filteredDepartments, setFilteredDepartments] = useState([]);
+  const [filteredCategories, setFilteredCategories] = useState([]);
+  const [filteredVendors, setFilteredVendors] = useState([]);
   const [filteredRequisitions, setFilteredRequisitions] = useState([]);
+  const [filteredRequests, setFilteredRequests] = useState([]);
   const [requisitionsModalOpen, setRequisitionsModalOpen] = useState(false);
+  const [vendorsModalOpen, setVendorsModalOpen] = useState(false);
+  const [categoriesModalOpen, setCategoriesModalOpen] = useState(false);
+  const [departmentsModalOpen, setDepartmentsModalOpen] = useState(false);
   const [showItems, setShowItems] = useState({});
   const [requisitionPropsData, setRequisitionPropsData] = useState(null);
   const [showingRequisition, setShowingRequisition] = useState([]);
-  const [requisitionInactiveTooLong, setRequisitionInactiveTooLong] =
-    useState(false);
-  const [actionIndication, setActionIndication] = useState("");
+
   const [requisitionPropsOperationType, setRequisitionPropsOperationType] =
     useState("");
+  const [deadlineCounts, setDeadlineCounts] = useState({
+    red: 0,
+    yellow: 0,
+    green: 0,
+  });
   const navigate = useNavigate();
-
-  const fetchPurchaseRequisitions = async () => {
-    try {
-      const response = await axios.get(
-        "http://localhost:3001/admin/purchaseRequisitions"
-      );
-      setPurchaseRequisitions(response.data);
-    } catch (error) {
-      console.error("Error fetching Purchase Requisitions:", error);
-      toast.error("Error fetching Purchase Requisitions");
-    }
-  };
-  const handleShowItems = (requisitionId) => {
-    setShowItems((prevState) => ({
-      ...prevState,
-      [requisitionId]: !prevState[requisitionId],
-    }));
-  };
 
   const handleGeneratePOClick = (requisition) => {
     setSelectedRequisition(requisition);
@@ -117,55 +114,123 @@ function AdminDashboard() {
   const handleCloseModal = () => {
     setSelectedRequisition(null);
     setRequisitionsModalOpen(false);
+    setDepartmentsModalOpen(false);
+    setCategoriesModalOpen(false);
+    setVendorsModalOpen(false);
+    fetchVendors();
+    fetchCategories();
     fetchPurchaseRequisitions();
+    fetchDepartments();
+  };
+
+  const fetchPurchaseRequisitions = async () => {
+    try {
+      const response = await axios.get(
+        `${REACT_APP_API_BASE_URL}/admin/purchaseRequisitions`
+      );
+      setPurchaseRequisitions(response.data);
+    } catch (error) {
+      console.error("Error fetching Purchase Requisitions:", error);
+      toast.error("Error fetching Purchase Requisitions");
+    }
+  };
+  const fetchDepartments = async () => {
+    try {
+      const response = await axios.get(
+        `${REACT_APP_API_BASE_URL}/admin/departments`
+      );
+      setDepartments(response.data);
+      setFilteredDepartments(response.data);
+    } catch (error) {
+      console.error("Error fetching Departments:", error);
+      toast.error("Error fetching Departments");
+    }
+  };
+  const fetchCategories = async () => {
+    try {
+      const response = await axios.get(
+        `${REACT_APP_API_BASE_URL}/admin/itemCategories`
+      );
+      setCategories(response.data);
+      setFilteredCategories(response.data);
+    } catch (error) {
+      console.error("Error fetching Categories:", error);
+      toast.error("Error fetching Categories");
+    }
+  };
+  const fetchVendors = async () => {
+    try {
+      const response = await axios.get(
+        `${REACT_APP_API_BASE_URL}/admin/vendors`
+      );
+      setVendors(response.data);
+      setFilteredVendors(response.data);
+    } catch (error) {
+      console.error("Error fetching Vendors:", error);
+      toast.error("Error fetching Vendors");
+    }
+  };
+
+  const fetchData = async () => {
+    try {
+      const token = sessionStorage.getItem("token");
+
+      if (!token) {
+        throw new Error("No token or user stored");
+      }
+
+      const response = await axios.get(`${REACT_APP_API_BASE_URL}/dashboard`, {
+        headers: { Authorization: token },
+      });
+
+      if (response.data.message === "success") {
+        console.log("Logged in");
+      }
+    } catch (error) {
+      console.error("Error fetching dashboard data:", error);
+      toast.error("Error fetching dashboard data");
+      setError(true);
+    }
+  };
+
+  const fetchRequests = async () => {
+    try {
+      const response = await axios.get(
+        `${REACT_APP_API_BASE_URL}/admin/requests`
+      );
+      setRequests(response.data);
+    } catch (error) {
+      console.error("Error fetching requests:", error);
+      toast.error("Error fetching requests");
+    }
   };
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        console.log("token again:", token);
-        if (!token) {
-          throw new Error("No token stored");
-        }
-        toast.success(`Welcome back, ${currentUser.name}`);
+    const storedUser = sessionStorage.getItem("user");
+    if (storedUser) {
+      setCurrentUser(JSON.parse(storedUser));
+      console.log(JSON.parse(storedUser));
+    } else {
+      navigate("/admin/login"); // Redirect if no user is stored
+    }
 
-        const response = await axios.get("http://localhost:3001/dashboard", {
-          headers: { Authorization: token },
-        });
-
-        if (response.data.message === "success") {
-          console.log("Logged in");
-        }
-      } catch (error) {
-        console.error("Error fetching dashboard data:", error);
-        toast.error("Error fetching dashboard data");
-        setError(true);
-      }
+    const fetchDataAndOtherRequests = async () => {
+      await fetchData();
+      fetchRequests();
+      fetchVendors();
+      fetchCategories();
+      fetchDepartments();
+      fetchPurchaseRequisitions();
     };
 
-    fetchData();
-    const fetchRequests = async () => {
-      try {
-        const response = await axios.get(
-          "http://localhost:3001/admin/requests"
-        );
-        setRequests(response.data);
-      } catch (error) {
-        console.error("Error fetching requests:", error);
-        toast.error("Error fetching requests");
-      }
-    };
-    fetchRequests();
+    fetchDataAndOtherRequests();
+  }, []);
 
-    fetchPurchaseRequisitions();
-  }, [currentUser]);
-
-  const handleRemove = (id, status, message) => {
-    setRemoving(id);
+  const handleUpdate = (id, status, message) => {
+    setupdating(id);
     setTimeout(async () => {
       try {
-        await axios.put(`http://localhost:3001/admin/requests/${id}`, {
+        await axios.put(`${REACT_APP_API_BASE_URL}/admin/requests/${id}`, {
           status,
         });
         setRequests((prevRequests) =>
@@ -178,15 +243,16 @@ function AdminDashboard() {
         console.error(`Error updating request status to ${status}:`, error);
         toast.error(`Error updating request status to ${status}`);
       } finally {
-        setRemoving(null);
+        setupdating(null);
+        setSearchUsers("");
       }
     }, 500);
   };
-  const handleRemoveRequisition = (id, status, message) => {
-    setRemoving(id);
+  const handleUpdateRequisition = (id, status, message) => {
+    setupdating(id);
     setTimeout(async () => {
       try {
-        await axios.put(`http://localhost:3001/admin/requisitions/${id}`, {
+        await axios.put(`${REACT_APP_API_BASE_URL}/admin/requisitions/${id}`, {
           status,
         });
         setPurchaseRequisitions((prevRequisitions) =>
@@ -201,38 +267,47 @@ function AdminDashboard() {
         console.error(`Error updating request status to ${status}:`, error);
         toast.error(`Error updating request status to ${status}`);
       } finally {
-        setRemoving(null);
+        setupdating(null);
+        setViewMode("allRequisitions");
+        setSearchRequisitions("");
       }
     }, 500);
   };
 
   const handleAccept = (id) => {
-    handleRemove(
+    handleUpdate(
       id,
       "accepted",
       "Request accepted and granted general user role"
     );
   };
   const handleRequisitionApprove = (id) => {
-    handleRemoveRequisition(id, "approved", "Requisition approved");
+    handleUpdateRequisition(id, "approved", "Requisition approved");
   };
   const handleRequisitionPending = (id) => {
-    handleRemoveRequisition(
+    handleUpdateRequisition(
       id,
       "pending",
       "Requisition status updated to 'pending'"
     );
   };
   const handleMarkRequisitionAsClose = (id) => {
-    handleRemoveRequisition(
+    handleUpdateRequisition(
       id,
       "closed",
       "Requisition status updated to 'closed'"
     );
   };
+  const handleMarkRequisitionAsComplete = (id) => {
+    handleUpdateRequisition(
+      id,
+      "complete",
+      "Requisition status updated to 'complete'"
+    );
+  };
 
   const handleAcceptAsAdmin = (id) => {
-    handleRemove(
+    handleUpdate(
       id,
       "accepted as admin",
       "Request accepted and granted admin role"
@@ -240,10 +315,10 @@ function AdminDashboard() {
   };
 
   const handleReject = (id) => {
-    handleRemove(id, "rejected", "User request rejected");
+    handleUpdate(id, "rejected", "User request rejected");
   };
   const handleRejectRequisition = (id) => {
-    handleRemoveRequisition(id, "rejected", "Requisition rejected");
+    handleUpdateRequisition(id, "rejected", "Requisition rejected");
   };
 
   const flattenObject = (data) => {
@@ -279,55 +354,35 @@ function AdminDashboard() {
     });
     return flattened;
   };
-  const exportToExcel = (data, fileName = "PurchaseRequisitions.xlsx") => {
-    const flattened_purchase_requisitions = flattenObject(data);
-    const worksheet = XLSX.utils.json_to_sheet(flattened_purchase_requisitions);
+  const exportToExcel = (
+    data,
+    fileName = "PurchaseRequisitions.xlsx",
+    shouldFlatten
+  ) => {
+    const processed_data = shouldFlatten ? flattenObject(data) : data;
+    const worksheet = XLSX.utils.json_to_sheet(processed_data);
 
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "PurchaseRequisitions");
 
     XLSX.writeFile(workbook, fileName);
   };
-  const handleDownloadReports = () => {
-    exportToExcel(filteredRequisitions);
+  const handleDownloadRequisitionReports = () => {
+    exportToExcel(
+      filteredRequisitions,
+      "POS_NSHM_PurchaseRequisitions.xlsx",
+      true
+    );
   };
 
-  const checkDeadline = (requisition) => {
-    // const isDeadlineNear =
-    //   Math.round(
-    //     (new Date(requisition.required_by) - new Date()) / (1000 * 60 * 60)
-    //   ) <= 72;
-    // const isDeadlinePast =
-    //   Math.round(
-    //     (new Date(requisition.required_by) - new Date()) / (1000 * 60 * 60)
-    //   ) < 0;
-
-    if (
-      Math.round(
-        (new Date(requisition.required_by) - new Date()) / (1000 * 60 * 60)
-      ) <= 72
-    ) {
-      setActionIndication("nearDeadline");
-    }
-    if (
-      Math.round(
-        (new Date(requisition.required_by) - new Date()) / (1000 * 60 * 60)
-      ) < 0
-    ) {
-      setActionIndication("pastDeadline");
-    }
-    if (
-      Math.round((new Date() - requisition.required_by) / (1000 * 60 * 60)) >=
-      24
-    ) {
-      setRequisitionInactiveTooLong(true);
-    }
+  const handleDownloadUserReports = () => {
+    exportToExcel(filteredRequests, "POS_NSHM_Users.xlsx", false);
   };
 
   const getActionIndicatorColor = (requisition) => {
     const currentTime = new Date();
-    const requiredBy = new Date(requisition.required_by);
-    const hoursDifference = (requiredBy - currentTime) / (1000 * 60 * 60);
+    const requiredOn = new Date(requisition.required_on);
+    const hoursDifference = (requiredOn - currentTime) / (1000 * 60 * 60);
 
     if (hoursDifference < 0 && requisition.status !== "closed") return "red";
     if (hoursDifference <= 72 && requisition.status !== "closed")
@@ -343,15 +398,93 @@ function AdminDashboard() {
     return null; // No action indicator needed
   };
 
-  const handleLogOut = () => {
-    localStorage.removeItem("token");
-    navigate("/admin/login");
+  const countColors = () => {
+    const counts = { red: 0, yellow: 0, green: 0 };
+    purchaseRequisitions.forEach((requisition) => {
+      const color = getActionIndicatorColor(requisition);
+      if (color) {
+        counts[color] += 1;
+      }
+    });
+    setDeadlineCounts(counts);
   };
 
-  const filteredRequests =
-    viewMode === "manageUsers"
-      ? requests.filter((request) => request.status.includes("accepted"))
-      : requests.filter((request) => !request.status.includes("accepted"));
+  useEffect(() => {
+    countColors();
+  }, [purchaseRequisitions]);
+
+  // Delete Department
+
+  const handleDeleteDepartment = async (id) => {
+    try {
+      const response = await axios.delete(
+        `${REACT_APP_API_BASE_URL}/departments/${id}`
+      );
+
+      if (response.data.success) {
+        toast.success(response.data.message);
+
+        const updatedDepartments = departments.filter(
+          (dept) => dept.dept_id !== id
+        );
+        setDepartments(updatedDepartments);
+      } else {
+        alert(response.data.message);
+      }
+    } catch (error) {
+      console.error("Error deleting department:", error);
+      alert("Failed to delete department");
+    }
+  };
+  const handleDeleteCategory = async (id) => {
+    try {
+      const response = await axios.delete(
+        `${REACT_APP_API_BASE_URL}/categories/${id}`
+      );
+
+      if (response.data.success) {
+        toast.success(response.data.message);
+
+        const updatedCategories = categories.filter(
+          (cat) => cat.category_id !== id
+        );
+        setCategories(updatedCategories);
+      } else {
+        alert(response.data.message);
+      }
+    } catch (error) {
+      console.error("Error deleting category:", error);
+      alert("Failed to delete category");
+    }
+  };
+  const handleDeleteVendor = async (id) => {
+    try {
+      const response = await axios.delete(
+        `${REACT_APP_API_BASE_URL}/vendors/${id}`
+      );
+
+      if (response.data.success) {
+        toast.success(response.data.message);
+
+        const updatedVendors = vendors.filter(
+          (vendor) => vendor.vendor_id !== id
+        );
+        setVendors(updatedVendors);
+      } else {
+        alert(response.data.message);
+      }
+    } catch (error) {
+      console.error("Error deleting vendor:", error);
+      alert("Failed to delete vendor");
+    }
+  };
+
+  const handleLogOut = () => {
+    localStorage.removeItem("token");
+    sessionStorage.removeItem("user");
+    setCurrentUser(null);
+    navigate("/admin/login");
+  };
 
   const handleSearchRequisitions = (e) => {
     const searchTerm = e.target.value;
@@ -387,7 +520,118 @@ function AdminDashboard() {
     );
 
     setFilteredRequisitions(filtered);
-    console.log(filteredRequisitions.length > 0);
+    setViewMode("search");
+  };
+
+  const handleSearchDepartments = (e) => {
+    const searchTerm = e.target.value;
+    setSearchDepartments(searchTerm);
+
+    const filtered = departments.filter(
+      (dept) =>
+        dept.dept_id
+          .toString()
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase().trim()) ||
+        dept.dept_name
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase().trim()) ||
+        dept.description
+          ?.toLowerCase()
+          ?.includes(searchTerm.toLowerCase().trim())
+    );
+
+    setFilteredDepartments(filtered);
+  };
+
+  const handleSearchCategories = (e) => {
+    const searchTerm = e.target.value;
+    setSearchCategories(searchTerm);
+
+    const filtered = categories.filter(
+      (cat) =>
+        cat.category_id
+          .toString()
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase().trim()) ||
+        cat.category_name
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase().trim()) ||
+        cat.description
+          ?.toLowerCase()
+          ?.includes(searchTerm.toLowerCase().trim())
+    );
+
+    setFilteredCategories(filtered);
+  };
+
+  const handleSearchVendors = (e) => {
+    const searchTerm = e.target.value;
+    setSearchVendors(searchTerm);
+
+    const filtered = vendors.filter(
+      (vendor) =>
+        vendor.vendor_id
+          .toString()
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase().trim()) ||
+        vendor.vendor_name
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase().trim()) ||
+        vendor.requisition_id
+          ?.toString()
+          ?.toLowerCase()
+          ?.includes(searchTerm.toLowerCase().trim()) ||
+        vendor.vendor_contact_person
+          ?.toLowerCase()
+          ?.includes(searchTerm.toLowerCase().trim()) ||
+        vendor.vendor_address?.includes(searchTerm.toLowerCase().trim()) ||
+        vendor.vendor_contact?.toString().includes(searchTerm) ||
+        vendor.vendor_email_id
+          ?.toLowerCase()
+          ?.includes(searchTerm.toLowerCase().trim()) ||
+        vendor.vendor_GSTIN
+          ?.toLowerCase()
+          ?.includes(searchTerm.toLowerCase().trim()) ||
+        vendor.vendor_VAT
+          ?.toLowerCase()
+          ?.includes(searchTerm.toLowerCase().trim()) ||
+        vendor.vendor_TIN
+          ?.toLowerCase()
+          ?.includes(searchTerm.toLowerCase().trim())
+    );
+
+    setFilteredVendors(filtered);
+  };
+
+  const handleSearchUsers = (e) => {
+    const searchTerm = e.target.value;
+    setSearchUsers(searchTerm);
+
+    const filtered = requests.filter(
+      (request) =>
+        request.id
+          .toString()
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase().trim()) ||
+        request.name.toLowerCase().includes(searchTerm.toLowerCase().trim()) ||
+        request.username
+          ?.toLowerCase()
+          ?.includes(searchTerm.toLowerCase().trim()) ||
+        request.email.toLowerCase().includes(searchTerm.toLowerCase().trim()) ||
+        request.organization
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase().trim()) ||
+        request.location
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase().trim()) ||
+        request.desired_role
+          ?.toLowerCase()
+          .includes(searchTerm.toLowerCase()) ||
+        request.status?.toLowerCase().includes(searchTerm.toLowerCase().trim())
+    );
+
+    setFilteredRequests(filtered);
     setViewMode("search");
   };
 
@@ -417,12 +661,31 @@ function AdminDashboard() {
     setFilteredRequisitions(filtered);
   }, [viewMode, purchaseRequisitions]);
 
-  if (!currentUser) {
-    return <Navigate to="/admin/login" />;
-  }
+  useEffect(() => {
+    let filtered = [];
+
+    if (viewMode === "manageUsers") {
+      filtered = requests.filter((request) =>
+        request.status.includes("accepted")
+      );
+    } else {
+      filtered = requests.filter(
+        (request) => !request.status.includes("accepted")
+      );
+    }
+
+    // sorting such that latest requisitions are on top
+
+    filtered.sort((a, b) => b.id - a.id);
+    setFilteredRequests(filtered);
+  }, [viewMode, requests]);
+
+  // if (!currentUser) {
+  //   return <Navigate to="/admin/login" />;
+  // }
 
   return (
-    <div className="admin-dashboard">
+    <div className="admin-dashboard" onClick={() => setWritingToolsMode(false)}>
       <nav className="dashboard--navbar">
         {/* <img src={nshmLogo} alt="" width="50px" className="nshmLogo" /> */}
         <div className="title--admin-panel">
@@ -444,7 +707,14 @@ function AdminDashboard() {
             }}
           >
             <FontAwesomeIcon icon={faUserGear} />
-            Manage Users
+            Users
+            <span className="metric">
+              {
+                requests.filter((request) =>
+                  request.status.includes("accepted")
+                ).length
+              }
+            </span>
           </div>
           <div
             className={`manage-requisitions ${
@@ -456,7 +726,47 @@ function AdminDashboard() {
             }}
           >
             <FontAwesomeIcon icon={faList} />
-            Manage Requisitions
+            Requisitions
+            <span className="metric">{purchaseRequisitions.length}</span>
+          </div>
+          <div
+            className={`manage-requisitions ${
+              pageViewMode === "Manage Departments" ? "active" : ""
+            }`}
+            onClick={() => {
+              setPageViewMode("Manage Departments");
+              setViewMode("");
+            }}
+          >
+            <FontAwesomeIcon icon={faLayerGroup} />
+            Departments
+            <span className="metric">{departments.length}</span>
+          </div>
+          <div
+            className={`manage-requisitions ${
+              pageViewMode === "Manage Categories" ? "active" : ""
+            }`}
+            onClick={() => {
+              setPageViewMode("Manage Categories");
+              setViewMode("");
+            }}
+          >
+            <FontAwesomeIcon icon={faTags} />
+            Categories
+            <span className="metric">{categories.length}</span>
+          </div>
+          <div
+            className={`manage-requisitions ${
+              pageViewMode === "Manage Vendors" ? "active" : ""
+            }`}
+            onClick={() => {
+              setPageViewMode("Manage Vendors");
+              setViewMode("");
+            }}
+          >
+            <FontAwesomeIcon icon={faTruck} />
+            Vendors
+            <span className="metric">{vendors.length}</span>
           </div>
           {/* <div
             className={`manage-categories ${
@@ -545,57 +855,75 @@ function AdminDashboard() {
       </nav>
       {pageViewMode && pageViewMode === "Manage Users" && (
         <div className="container">
-          <ProfileNavbar />
+          <ProfileNavbar
+            pr={purchaseRequisitions}
+            deadlineCounts={deadlineCounts}
+          />
 
           <h1 className="section-title">Users</h1>
-          <div className="quick-analytics">
-            <StatusPieChart
-              className="quick-analytics--pie"
-              userRequests={requests}
-            />
-            <div className="analytics-container quick-analytics--drafted-requisitions">
-              <div className="quick-analytics--title">Active Users</div>
-              <div className="quick-analytics--metric-value">
-                {
-                  requests.filter((req) => req.status.includes("accepted"))
-                    .length
-                }
-              </div>
-            </div>
+          {requests.length > 0 && (
+            <div className="quick-analytics">
+              <StatusPieChart
+                className="quick-analytics--pie"
+                userRequests={requests}
+              />
 
-            <div className="analytics-container quick-analytics--pending-requisitions">
-              <div className="quick-analytics--title">Pending</div>
-              <div className="quick-analytics--metric-value">
-                {requests.filter((req) => req.status === "rejected").length}
+              <div className="analytics-container quick-analytics--drafted-requisitions">
+                <div className="quick-analytics--title">Active Users</div>
+                <div className="quick-analytics--metric-value">
+                  {
+                    requests.filter((req) => req.status.includes("accepted"))
+                      .length
+                  }
+                </div>
               </div>
-            </div>
-            <div className="analytics-container quick-analytics--accepted-requisitions">
-              <div className="quick-analytics--title">Admins</div>
-              <div className="quick-analytics--metric-value">
-                {
-                  requests.filter((req) => req.status === "accepted as admin")
-                    .length
-                }
-              </div>
-            </div>
 
-            <div className="analytics-container quick-analytics--created-requisitions">
-              <div className="quick-analytics--title">General Users</div>
-              <div className="quick-analytics--metric-value">
-                {requests.filter((req) => req.status === "accepted").length}
+              <div className="analytics-container quick-analytics--pending-requisitions">
+                <div className="quick-analytics--title">Pending</div>
+                <div className="quick-analytics--metric-value">
+                  {requests.filter((req) => req.status === "rejected").length}
+                </div>
+              </div>
+              <div className="analytics-container quick-analytics--accepted-requisitions">
+                <div className="quick-analytics--title">Admins</div>
+                <div className="quick-analytics--metric-value">
+                  {
+                    requests.filter((req) => req.status === "accepted as admin")
+                      .length
+                  }
+                </div>
+              </div>
+
+              <div className="analytics-container quick-analytics--created-requisitions">
+                <div className="quick-analytics--title">General Users</div>
+                <div className="quick-analytics--metric-value">
+                  {requests.filter((req) => req.status === "accepted").length}
+                </div>
               </div>
             </div>
-          </div>
+          )}
+
           <div className="search-container">
             <label htmlFor="search-field" id="search-field-container">
               <FontAwesomeIcon icon={faSearch} className="search-icon" />
               <input
                 type="text"
                 name="search"
+                value={searchUsers}
+                onChange={handleSearchUsers}
                 id="search-field"
                 placeholder="Search User"
               />
             </label>
+            <div className="buttons">
+              <div
+                className="btn--download-reports"
+                onClick={handleDownloadUserReports}
+              >
+                Reports
+                <FontAwesomeIcon icon={faArrowDown} />
+              </div>
+            </div>
           </div>
           {filteredRequests.length > 0 && (
             <div className="table-container">
@@ -618,7 +946,7 @@ function AdminDashboard() {
                   {filteredRequests.map((request) => (
                     <tr
                       key={request.id}
-                      className={removing === request.id ? "fade-out" : ""}
+                      className={updating === request.id ? "fade-out" : ""}
                     >
                       <td>{request.id}</td>
                       <td>{request.name}</td>
@@ -707,9 +1035,13 @@ function AdminDashboard() {
       )}
       {pageViewMode && pageViewMode === "Detailed Dashboard" && (
         <div className="container">
-          <ProfileNavbar />
+          <ProfileNavbar
+            pr={purchaseRequisitions}
+            deadlineCounts={deadlineCounts}
+          />
+          {/* <h1 className="section-title">Analytics</h1> */}
           {/* User Analytics */}
-          <h1 className="section-title">Analytics</h1>
+          {/* 
           <h2 className="section-title">Users</h2>
 
           <div className="quick-analytics">
@@ -749,16 +1081,22 @@ function AdminDashboard() {
                 {requests.filter((req) => req.status === "accepted").length}
               </div>
             </div>
-          </div>
+          </div> */}
           {/* Requisition Analytics */}
-          <h2 className="section-title">Requisitions</h2>
+          {/* <h2 className="section-title">Requisitions</h2> */}
 
-          <div className="quick-analytics">
+          {/* <div className="quick-analytics">
             <StatusPieChart
               className="quick-analytics--pie"
               purchaseRequisitions={purchaseRequisitions}
-            />
-            <div className="analytics-container quick-analytics--drafted-requisitions">
+            /> */}
+          {/* <div className="analytics-container quick-analytics--untouched-requisitions">
+              <div className="quick-analytics--title">Require Action</div>
+              <div className="quick-analytics--metric-value">
+                {deadlineCounts.red}
+              </div>
+            </div> */}
+          {/* <div className="analytics-container quick-analytics--drafted-requisitions">
               <div className="quick-analytics--title">
                 Ready for PO Generation
               </div>
@@ -835,101 +1173,479 @@ function AdminDashboard() {
                 }
               </div>
             </div>
-          </div>
+          </div> */}
+          {requests.length > 0 && (
+            <>
+              <h1 className="section-title">Users</h1>
+              <div className="quick-analytics">
+                <StatusPieChart
+                  className="quick-analytics--pie"
+                  userRequests={requests}
+                />
+
+                <div className="analytics-container quick-analytics--drafted-requisitions">
+                  <div className="quick-analytics--title">Active Users</div>
+                  <div className="quick-analytics--metric-value">
+                    {
+                      requests.filter((req) => req.status.includes("accepted"))
+                        .length
+                    }
+                  </div>
+                </div>
+
+                <div className="analytics-container quick-analytics--pending-requisitions">
+                  <div className="quick-analytics--title">Pending</div>
+                  <div className="quick-analytics--metric-value">
+                    {requests.filter((req) => req.status === "rejected").length}
+                  </div>
+                </div>
+                <div className="analytics-container quick-analytics--accepted-requisitions">
+                  <div className="quick-analytics--title">Admins</div>
+                  <div className="quick-analytics--metric-value">
+                    {
+                      requests.filter(
+                        (req) => req.status === "accepted as admin"
+                      ).length
+                    }
+                  </div>
+                </div>
+
+                <div className="analytics-container quick-analytics--created-requisitions">
+                  <div className="quick-analytics--title">General Users</div>
+                  <div className="quick-analytics--metric-value">
+                    {requests.filter((req) => req.status === "accepted").length}
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+
+          {purchaseRequisitions.length > 0 && (
+            <>
+              <h1 className="section-title">Requisitions</h1>
+
+              <div className="quick-analytics">
+                <StatusPieChart
+                  className="quick-analytics--pie"
+                  purchaseRequisitions={purchaseRequisitions}
+                />
+                <div className="analytics-container quick-analytics--drafted-requisitions">
+                  <div className="quick-analytics--title">
+                    Ready for PO Generation
+                  </div>
+                  <div className="quick-analytics--metric-value">
+                    {
+                      purchaseRequisitions.filter(
+                        (req) => req.status === "approved"
+                      ).length
+                    }
+                  </div>
+                </div>
+                <div className="analytics-container quick-analytics--all-requisitions">
+                  <div className="quick-analytics--title">All</div>
+                  <div className="quick-analytics--metric-value">
+                    {purchaseRequisitions.length}
+                  </div>
+                </div>
+                <div className="analytics-container quick-analytics--pending-requisitions">
+                  <div className="quick-analytics--title">Pending</div>
+                  <div className="quick-analytics--metric-value">
+                    {
+                      purchaseRequisitions.filter(
+                        (req) => req.status === "pending"
+                      ).length
+                    }
+                  </div>
+                </div>
+                <div className="analytics-container quick-analytics--accepted-requisitions">
+                  <div className="quick-analytics--title">Accepted</div>
+                  <div className="quick-analytics--metric-value">
+                    {
+                      purchaseRequisitions.filter(
+                        (req) => req.status === "approved"
+                      ).length
+                    }
+                  </div>
+                </div>
+
+                <div className="analytics-container quick-analytics--created-requisitions">
+                  <div className="quick-analytics--title">Created</div>
+                  <div className="quick-analytics--metric-value">
+                    {
+                      purchaseRequisitions.filter(
+                        (req) => req.status === "approved"
+                      ).length
+                    }
+                  </div>
+                </div>
+                <div className="analytics-container quick-analytics--rejected-requisitions">
+                  <div className="quick-analytics--title">Rejected</div>
+                  <div className="quick-analytics--metric-value">
+                    {
+                      purchaseRequisitions.filter(
+                        (req) => req.status === "rejected"
+                      ).length
+                    }
+                  </div>
+                </div>
+                <div className="analytics-container quick-analytics--closed-requisitions">
+                  <div className="quick-analytics--title">Closed</div>
+                  <div className="quick-analytics--metric-value">
+                    {
+                      purchaseRequisitions.filter(
+                        (req) => req.status === "closed"
+                      ).length
+                    }
+                  </div>
+                </div>
+                <div className="analytics-container quick-analytics--completed-requisitions">
+                  <div className="quick-analytics--title">Completed</div>
+                  <div className="quick-analytics--metric-value">
+                    {
+                      purchaseRequisitions.filter(
+                        (req) => req.status === "complete"
+                      ).length
+                    }
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+          <RequisitionsCharts
+            purchaseRequisitions={purchaseRequisitions}
+            userRequests={requests}
+          />
         </div>
       )}
       {pageViewMode && pageViewMode === "Manage Categories" && (
         <div className="container">
-          <ProfileNavbar />
-        </div>
-      )}
-      {pageViewMode && pageViewMode === "Manage Requisitions" && (
-        <div className="container">
-          <ProfileNavbar />
-          <h1 className="section-title">Requisitions</h1>
-          <div className="quick-analytics">
-            <StatusPieChart
-              className="quick-analytics--pie"
-              purchaseRequisitions={purchaseRequisitions}
-            />
-            <div className="analytics-container quick-analytics--drafted-requisitions">
-              <div className="quick-analytics--title">
-                Ready for PO Generation
-              </div>
-              <div className="quick-analytics--metric-value">
-                {
-                  purchaseRequisitions.filter(
-                    (req) => req.status === "approved"
-                  ).length
-                }
-              </div>
-            </div>
-            <div className="analytics-container quick-analytics--all-requisitions">
-              <div className="quick-analytics--title">All</div>
-              <div className="quick-analytics--metric-value">
-                {purchaseRequisitions.length}
-              </div>
-            </div>
-            <div className="analytics-container quick-analytics--pending-requisitions">
-              <div className="quick-analytics--title">Pending</div>
-              <div className="quick-analytics--metric-value">
-                {
-                  purchaseRequisitions.filter((req) => req.status === "pending")
-                    .length
-                }
-              </div>
-            </div>
-            <div className="analytics-container quick-analytics--accepted-requisitions">
-              <div className="quick-analytics--title">Accepted</div>
-              <div className="quick-analytics--metric-value">
-                {
-                  purchaseRequisitions.filter(
-                    (req) => req.status === "approved"
-                  ).length
-                }
-              </div>
-            </div>
-
-            <div className="analytics-container quick-analytics--created-requisitions">
-              <div className="quick-analytics--title">Created</div>
-              <div className="quick-analytics--metric-value">
-                {
-                  purchaseRequisitions.filter(
-                    (req) => req.status === "approved"
-                  ).length
-                }
-              </div>
-            </div>
-            <div className="analytics-container quick-analytics--rejected-requisitions">
-              <div className="quick-analytics--title">Rejected</div>
-              <div className="quick-analytics--metric-value">
-                {
-                  purchaseRequisitions.filter(
-                    (req) => req.status === "rejected"
-                  ).length
-                }
-              </div>
-            </div>
-            <div className="analytics-container quick-analytics--closed-requisitions">
-              <div className="quick-analytics--title">Closed</div>
-              <div className="quick-analytics--metric-value">
-                {
-                  purchaseRequisitions.filter((req) => req.status === "closed")
-                    .length
-                }
-              </div>
-            </div>
-            <div className="analytics-container quick-analytics--completed-requisitions">
-              <div className="quick-analytics--title">Completed</div>
-              <div className="quick-analytics--metric-value">
-                {
-                  purchaseRequisitions.filter(
-                    (req) => req.status === "complete"
-                  ).length
-                }
+          <ProfileNavbar
+            pr={purchaseRequisitions}
+            deadlineCounts={deadlineCounts}
+          />
+          <h1 className="section-title">Categories</h1>
+          <div className="search-container">
+            <label htmlFor="search-field" id="search-field-container">
+              <FontAwesomeIcon icon={faSearch} className="search-icon" />
+              <input
+                type="text"
+                name="search"
+                value={searchCategories}
+                onChange={handleSearchCategories}
+                id="search-field"
+                placeholder="Search Categories"
+              />
+            </label>
+            <div className="buttons">
+              <div
+                className="btn--add-new"
+                onClick={() => setCategoriesModalOpen(true)}
+              >
+                <FontAwesomeIcon icon={faPlus} className="fa-icon plus-icon" />
+                New
               </div>
             </div>
           </div>
+          {categories.length > 0 ? (
+            <div className="table-container">
+              <table className="userTable">
+                <thead>
+                  <tr>
+                    <th>Category ID</th>
+                    <th>Category Name</th>
+                    <th>Category Description</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredCategories.map((category) => (
+                    <tr key={category.category_id}>
+                      <td>{category.category_id}</td>
+                      <td>{category.category_name}</td>
+                      <td>
+                        {category.description || "No Description Provided"}{" "}
+                      </td>
+
+                      <td>
+                        <div className="buttons">
+                          <button
+                            className="button-reject"
+                            onClick={() =>
+                              handleDeleteCategory(category.category_id)
+                            }
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="table-container">
+              <p className="no-results">
+                Looks empty in here ! Try adding a category
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+      {pageViewMode && pageViewMode === "Manage Departments" && (
+        <div className="container">
+          <ProfileNavbar
+            pr={purchaseRequisitions}
+            deadlineCounts={deadlineCounts}
+          />
+          <h1 className="section-title">Departments</h1>
+          <div className="search-container">
+            <label htmlFor="search-field" id="search-field-container">
+              <FontAwesomeIcon icon={faSearch} className="search-icon" />
+              <input
+                type="text"
+                name="search"
+                id="search-field"
+                placeholder="Search Departments"
+                value={searchDepartments}
+                onChange={handleSearchDepartments}
+              />
+            </label>
+            <div className="buttons">
+              <div
+                className="btn--add-new"
+                onClick={() => setDepartmentsModalOpen(true)}
+              >
+                <FontAwesomeIcon icon={faPlus} className="fa-icon plus-icon" />
+                New
+              </div>
+            </div>
+          </div>
+          {departments.length > 0 ? (
+            <div className="table-container">
+              <table className="userTable">
+                <thead>
+                  <tr>
+                    <th>Department ID</th>
+                    <th>Department Name</th>
+                    <th>Department Description</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredDepartments.map((department) => (
+                    <tr key={department.dept_id}>
+                      <td>{department.dept_id}</td>
+                      <td>{department.dept_name}</td>
+                      <td>
+                        {department.description || "No Description Provided"}{" "}
+                      </td>
+
+                      <td>
+                        <div className="buttons">
+                          <button
+                            className="button-reject"
+                            onClick={() =>
+                              handleDeleteDepartment(department.dept_id)
+                            }
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="table-container">
+              <p className="no-results">
+                Looks empty in here ! Try adding a department
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+      {pageViewMode && pageViewMode === "Manage Vendors" && (
+        <div className="container">
+          <ProfileNavbar
+            pr={purchaseRequisitions}
+            deadlineCounts={deadlineCounts}
+          />
+          <h1 className="section-title">Vendors</h1>
+          <div className="search-container">
+            <label htmlFor="search-field" id="search-field-container">
+              <FontAwesomeIcon icon={faSearch} className="search-icon" />
+              <input
+                type="text"
+                name="search"
+                id="search-field"
+                placeholder="Search Vendors"
+                value={searchVendors}
+                onChange={handleSearchVendors}
+              />
+            </label>
+            <div className="buttons">
+              <div
+                className="btn--add-new"
+                onClick={() => setVendorsModalOpen(true)}
+              >
+                <FontAwesomeIcon icon={faPlus} className="fa-icon plus-icon" />
+                New
+              </div>
+            </div>
+          </div>
+          {vendors.length > 0 ? (
+            <div className="table-container">
+              <table className="userTable">
+                <thead>
+                  <tr>
+                    <th>Vendor ID</th>
+                    <th>Vendor Name</th>
+                    <th>Vendor Email</th>
+                    <th>Vendor Contact Person</th>
+                    <th>Vendor Contact</th>
+                    <th>Vendor Address</th>
+                    <th>Vendor GSTIN</th>
+                    <th>Vendor VAT No.</th>
+                    <th>Vendor TIN No.</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredVendors.map((vendor) => (
+                    <tr key={vendor.vendor_id}>
+                      <td>{vendor.vendor_id}</td>
+                      <td>{vendor.vendor_name}</td>
+                      <td>{vendor.vendor_email_id}</td>
+                      <td>{vendor.vendor_contact_person}</td>
+                      <td>{vendor.vendor_contact}</td>
+                      <td>{vendor.vendor_address}</td>
+                      <td>{vendor.vendor_GSTIN}</td>
+                      <td>{vendor.vendor_VAT}</td>
+                      <td>{vendor.vendor_TIN}</td>
+
+                      <td>
+                        <div className="buttons">
+                          <button
+                            className="button-reject"
+                            onClick={() => handleDeleteVendor(vendor.vendor_id)}
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="table-container">
+              <p className="no-results">
+                Looks empty in here ! Try adding a vendor
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {pageViewMode && pageViewMode === "Manage Requisitions" && (
+        <div className="container">
+          <ProfileNavbar
+            pr={purchaseRequisitions}
+            deadlineCounts={deadlineCounts}
+          />
+          <h1 className="section-title">Requisitions</h1>
+          {purchaseRequisitions.length > 0 && (
+            <div className="quick-analytics">
+              <StatusPieChart
+                className="quick-analytics--pie"
+                purchaseRequisitions={purchaseRequisitions}
+              />
+              <div className="analytics-container quick-analytics--drafted-requisitions">
+                <div className="quick-analytics--title">
+                  Ready for PO Generation
+                </div>
+                <div className="quick-analytics--metric-value">
+                  {
+                    purchaseRequisitions.filter(
+                      (req) => req.status === "approved"
+                    ).length
+                  }
+                </div>
+              </div>
+              <div className="analytics-container quick-analytics--all-requisitions">
+                <div className="quick-analytics--title">All</div>
+                <div className="quick-analytics--metric-value">
+                  {purchaseRequisitions.length}
+                </div>
+              </div>
+              <div className="analytics-container quick-analytics--pending-requisitions">
+                <div className="quick-analytics--title">Pending</div>
+                <div className="quick-analytics--metric-value">
+                  {
+                    purchaseRequisitions.filter(
+                      (req) => req.status === "pending"
+                    ).length
+                  }
+                </div>
+              </div>
+              <div className="analytics-container quick-analytics--accepted-requisitions">
+                <div className="quick-analytics--title">Accepted</div>
+                <div className="quick-analytics--metric-value">
+                  {
+                    purchaseRequisitions.filter(
+                      (req) => req.status === "approved"
+                    ).length
+                  }
+                </div>
+              </div>
+
+              <div className="analytics-container quick-analytics--created-requisitions">
+                <div className="quick-analytics--title">Created</div>
+                <div className="quick-analytics--metric-value">
+                  {
+                    purchaseRequisitions.filter(
+                      (req) => req.status === "approved"
+                    ).length
+                  }
+                </div>
+              </div>
+              <div className="analytics-container quick-analytics--rejected-requisitions">
+                <div className="quick-analytics--title">Rejected</div>
+                <div className="quick-analytics--metric-value">
+                  {
+                    purchaseRequisitions.filter(
+                      (req) => req.status === "rejected"
+                    ).length
+                  }
+                </div>
+              </div>
+              <div className="analytics-container quick-analytics--closed-requisitions">
+                <div className="quick-analytics--title">Closed</div>
+                <div className="quick-analytics--metric-value">
+                  {
+                    purchaseRequisitions.filter(
+                      (req) => req.status === "closed"
+                    ).length
+                  }
+                </div>
+              </div>
+              <div className="analytics-container quick-analytics--completed-requisitions">
+                <div className="quick-analytics--title">Completed</div>
+                <div className="quick-analytics--metric-value">
+                  {
+                    purchaseRequisitions.filter(
+                      (req) => req.status === "complete"
+                    ).length
+                  }
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="search-container">
             <label htmlFor="search-field" id="search-field-container">
               <FontAwesomeIcon icon={faSearch} className="search-icon" />
@@ -945,7 +1661,7 @@ function AdminDashboard() {
             <div className="buttons">
               <div
                 className="btn--download-reports"
-                onClick={handleDownloadReports}
+                onClick={handleDownloadRequisitionReports}
               >
                 Reports
                 <FontAwesomeIcon icon={faArrowDown} />
@@ -965,7 +1681,10 @@ function AdminDashboard() {
               <p className="no-results">
                 {viewMode === "search" &&
                   `No results found for "${searchRequisitions}"`}
-                {viewMode === "allRequisitions" && `No requisitions found`}
+                {purchaseRequisitions.length > 0 &&
+                  viewMode === "allRequisitions" &&
+                  `No requisitions found`}
+                {!purchaseRequisitions.length && `Loading...`}
                 {viewMode === "pendingRequisitions" &&
                   `No pending requisitions found`}
                 {viewMode === "rejectedRequisitions" &&
@@ -997,7 +1716,7 @@ function AdminDashboard() {
                     <tr
                       key={requisition.requisition_id}
                       className={
-                        removing === requisition.requisition_id
+                        updating === requisition.requisition_id
                           ? "fade-out"
                           : ""
                       }
@@ -1101,7 +1820,7 @@ function AdminDashboard() {
                             <button
                               className="button-accept"
                               onClick={() =>
-                                handleMarkRequisitionAsClose(
+                                handleMarkRequisitionAsComplete(
                                   requisition.requisition_id
                                 )
                               }
@@ -1231,21 +1950,40 @@ function AdminDashboard() {
           </div>
         </div>
       )}
-      {showItemsTable && <ItemsTable requisition={showingRequisition} />}
-      <ToastContainer className="toast-container" position="bottom-right" />
-      {selectedRequisition && (
-        <GeneratePO
-          requisition={selectedRequisition}
-          onClose={handleCloseModal}
-        />
-      )}
-      {requisitionsModalOpen && (
-        <AddRequisition
-          onClose={handleCloseModal}
-          operationType={requisitionPropsOperationType}
-          requisitionPropsData={requisitionPropsData}
-        />
-      )}
+      <AnimatePresence>
+        {showItemsTable && <ItemsTable requisition={showingRequisition} />}
+      </AnimatePresence>
+      <AnimatePresence>
+        {selectedRequisition && (
+          <GeneratePO
+            requisition={selectedRequisition}
+            onClose={handleCloseModal}
+          />
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {requisitionsModalOpen && (
+          <AddRequisition
+            onClose={handleCloseModal}
+            operationType={requisitionPropsOperationType}
+            requisitionPropsData={requisitionPropsData}
+          />
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {departmentsModalOpen && <AddDepartment onClose={handleCloseModal} />}
+      </AnimatePresence>
+      <AnimatePresence>
+        {categoriesModalOpen && <AddCategory onClose={handleCloseModal} />}
+      </AnimatePresence>
+      <AnimatePresence>
+        {vendorsModalOpen && <AddVendor onClose={handleCloseModal} />}
+      </AnimatePresence>
+      <AnimatePresence>
+        {writingToolsMode && (
+          <WritingTools purchaseRequisitions={purchaseRequisitions} />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

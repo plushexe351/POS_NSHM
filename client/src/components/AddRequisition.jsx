@@ -5,6 +5,8 @@ import "react-toastify/dist/ReactToastify.css";
 import { AuthContext } from "../context/AuthContext";
 import { faPlus, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { motion } from "framer-motion";
+import REACT_APP_API_BASE_URL from "../config";
 
 const AddRequisition = ({ onClose, requisitionPropsData, operationType }) => {
   const { currentUser } = useContext(AuthContext); // Access current user details from context
@@ -54,13 +56,13 @@ const AddRequisition = ({ onClose, requisitionPropsData, operationType }) => {
   useEffect(() => {
     const fetchOptions = async () => {
       const categoriesResponse = await fetch(
-        "http://localhost:3001/admin/itemCategories"
+        `${REACT_APP_API_BASE_URL}/admin/itemCategories`
       );
       const vendorsResponse = await fetch(
-        "http://localhost:3001/admin/vendors"
+        `${REACT_APP_API_BASE_URL}/admin/vendors`
       );
       const departmentsResponse = await fetch(
-        "http://localhost:3001/admin/departments"
+        `${REACT_APP_API_BASE_URL}/admin/departments`
       );
       setCategories(await categoriesResponse.json());
       setVendors(await vendorsResponse.json());
@@ -92,7 +94,7 @@ const AddRequisition = ({ onClose, requisitionPropsData, operationType }) => {
     event.preventDefault();
 
     try {
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
       if (!token) {
         throw new Error("No token found");
       }
@@ -120,8 +122,8 @@ const AddRequisition = ({ onClose, requisitionPropsData, operationType }) => {
       }
 
       const url = requisitionData.requisition_id
-        ? "http://localhost:3001/editRequisition"
-        : "http://localhost:3001/addRequisitions";
+        ? `${REACT_APP_API_BASE_URL}/editRequisition`
+        : `${REACT_APP_API_BASE_URL}/addRequisitions`;
 
       requisitionData.requisition_id
         ? await axios.put(url, requisitionData)
@@ -135,8 +137,13 @@ const AddRequisition = ({ onClose, requisitionPropsData, operationType }) => {
   };
 
   return (
-    <div className="add-requisition-modal">
-      <div className="requisition-modal-content">
+    <motion.div className="add-requisition-modal" exit={{ opacity: 0 }}>
+      <motion.div
+        className="requisition-modal-content"
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.8, translateY: 200 }}
+      >
         <div className="requisition-form">
           <div className="close-button" onClick={onClose}></div>
           <h2>
@@ -220,7 +227,7 @@ const AddRequisition = ({ onClose, requisitionPropsData, operationType }) => {
               Add Item <FontAwesomeIcon icon={faPlus} />
             </button>
             <label>
-              Department:
+              Department
               <select
                 name="department"
                 id=""
@@ -238,7 +245,7 @@ const AddRequisition = ({ onClose, requisitionPropsData, operationType }) => {
               </select>
             </label>
             <label>
-              Preferred Vendor:
+              Preferred Vendor
               <select
                 name="vendor"
                 id=""
@@ -256,7 +263,7 @@ const AddRequisition = ({ onClose, requisitionPropsData, operationType }) => {
               </select>
             </label>
             <label>
-              Required On:
+              Required On
               <input
                 type="date"
                 value={requiredOn}
@@ -264,7 +271,7 @@ const AddRequisition = ({ onClose, requisitionPropsData, operationType }) => {
               />
             </label>
             <label>
-              Required By:
+              Required By
               <input
                 type="date"
                 value={requiredBy}
@@ -278,10 +285,8 @@ const AddRequisition = ({ onClose, requisitionPropsData, operationType }) => {
             )}
           </form>
         </div>
-      </div>
-
-      <ToastContainer />
-    </div>
+      </motion.div>
+    </motion.div>
   );
 };
 

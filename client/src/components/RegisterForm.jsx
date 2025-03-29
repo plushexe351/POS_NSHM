@@ -3,6 +3,7 @@ import axios from "axios";
 import RequestStatus from "./RequestStatus";
 import { Link, Navigate } from "react-router-dom";
 import InfoModal from "./InfoModal";
+import REACT_APP_API_BASE_URL from "../config";
 
 function RegisterForm() {
   const [name, setName] = useState("");
@@ -18,7 +19,7 @@ function RegisterForm() {
     e.preventDefault();
     try {
       const response = await axios.post(
-        "http://localhost:3001/register/request",
+        `${REACT_APP_API_BASE_URL}/register/request`,
         {
           name,
           email,
