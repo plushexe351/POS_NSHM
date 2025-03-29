@@ -806,6 +806,22 @@ app.put("/editRequisition", verifyToken, (req, res) => {
   });
 });
 
+app.get("/health", (req, res) => {
+  res.status(200).send("Server is alive");
+});
+
+function keepAlive() {
+  setInterval(async () => {
+    try {
+      const res = await axios.get(`${process.env.SERVER_URl}/health`);
+      console.log(`Keep-alive ping successful: ${res.status}`);
+    } catch (error) {
+      console.error("Keep-alive failed:", error.message);
+    }
+  }, 10 * 60 * 1000);
+}
+
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
+  keepAlive();
 });
