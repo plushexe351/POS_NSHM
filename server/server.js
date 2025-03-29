@@ -16,15 +16,15 @@ const JWT_SECRET = process.env.JWT_SECRET;
 
 // prod cors cfg
 
-app.use(
-  cors({
-    origin: process.env.CORS_ORIGIN,
-    credentials: true,
-  })
-);
+// app.use(
+//   cors({
+//     origin: process.env.CORS_ORIGIN,
+//     credentials: true,
+//   })
+// );
 
 // dev cors cfg
-// app.use(cors());
+app.use(cors());
 
 app.use(bodyParser.json());
 
@@ -280,7 +280,7 @@ app.get("/admin/requests", (req, res) => {
   });
 });
 
-app.get("/admin/itemCategories", (req, res) => {
+app.get("/admin/itemCategories", verifyToken, (req, res) => {
   const query = `
   SELECT * from item_categories
   `;
@@ -294,7 +294,7 @@ app.get("/admin/itemCategories", (req, res) => {
   });
 });
 
-app.get("/admin/vendors", (req, res) => {
+app.get("/admin/vendors", verifyToken, (req, res) => {
   const query = `
   SELECT * from requisition_vendors
   `;
@@ -307,7 +307,7 @@ app.get("/admin/vendors", (req, res) => {
     res.status(200).send(results);
   });
 });
-app.get("/admin/departments", (req, res) => {
+app.get("/admin/departments", verifyToken, (req, res) => {
   const query = `
   SELECT * from departments
   `;
@@ -321,7 +321,7 @@ app.get("/admin/departments", (req, res) => {
   });
 });
 
-app.get("/admin/purchaseRequisitions", (req, res) => {
+app.get("/admin/purchaseRequisitions", verifyToken, (req, res) => {
   const requisitionsQuery = `
     SELECT requisition_id, name, username, email, selected_vendor, department, status, required_on, required_by, created_at
     FROM purchaseRequisitions;
@@ -378,7 +378,7 @@ app.get("/admin/purchaseRequisitions", (req, res) => {
 });
 
 // Update status of a user request
-app.put("/admin/requests/:id", (req, res) => {
+app.put("/admin/requests/:id", verifyToken, (req, res) => {
   const requestId = req.params.id;
   const { status } = req.body;
 
@@ -394,7 +394,7 @@ app.put("/admin/requests/:id", (req, res) => {
     }
   );
 });
-app.put("/admin/requisitions/:id", (req, res) => {
+app.put("/admin/requisitions/:id", verifyToken, (req, res) => {
   const requisitionId = req.params.id;
   const { status } = req.body;
 
@@ -415,7 +415,7 @@ app.put("/admin/requisitions/:id", (req, res) => {
 
 // Add Category
 
-app.post("/addCategory", (req, res) => {
+app.post("/addCategory", verifyToken, (req, res) => {
   const { cat_name, description } = req.body;
 
   // Input validation
@@ -442,7 +442,7 @@ app.post("/addCategory", (req, res) => {
 
 // Get vendor by name
 
-app.get("/vendor/:selectedVendor", (req, res) => {
+app.get("/vendor/:selectedVendor", verifyToken, (req, res) => {
   const { selectedVendor } = req.params;
 
   const query = "SELECT * FROM requisition_vendors WHERE vendor_name = ?";
@@ -462,7 +462,7 @@ app.get("/vendor/:selectedVendor", (req, res) => {
 });
 
 // Add vendor
-app.post("/addVendor", (req, res) => {
+app.post("/addVendor", verifyToken, (req, res) => {
   const {
     vendor_name,
     vendor_contact_person,
@@ -514,7 +514,7 @@ app.post("/addVendor", (req, res) => {
 });
 
 // Add department
-app.post("/addDepartment", (req, res) => {
+app.post("/addDepartment", verifyToken, (req, res) => {
   const { dept_name, description } = req.body;
 
   // Input validation
@@ -543,7 +543,7 @@ app.post("/addDepartment", (req, res) => {
 
 // Delete Department
 
-app.delete("/departments/:id", (req, res) => {
+app.delete("/departments/:id", verifyToken, (req, res) => {
   const departmentId = req.params.id;
 
   const sqlQuery = "DELETE FROM departments WHERE dept_id = ?";
@@ -570,7 +570,7 @@ app.delete("/departments/:id", (req, res) => {
 
 // Delete Vendor
 
-app.delete("/vendors/:id", (req, res) => {
+app.delete("/vendors/:id", verifyToken, (req, res) => {
   const vendorId = req.params.id;
 
   const sqlQuery = "DELETE FROM requisition_vendors WHERE vendor_id = ?";
@@ -597,7 +597,7 @@ app.delete("/vendors/:id", (req, res) => {
 
 // Delete Category
 
-app.delete("/categories/:id", (req, res) => {
+app.delete("/categories/:id", verifyToken, (req, res) => {
   const categoryId = req.params.id;
 
   const sqlQuery = "DELETE FROM item_categories WHERE category_id = ?";
@@ -623,7 +623,7 @@ app.delete("/categories/:id", (req, res) => {
 });
 
 // Add Requisition endpoint
-app.post("/addRequisitions", (req, res) => {
+app.post("/addRequisitions", verifyToken, (req, res) => {
   const {
     user_id,
     name,
@@ -710,7 +710,7 @@ app.post("/addRequisitions", (req, res) => {
 });
 
 // Update requisition endpoint
-app.put("/editRequisition", (req, res) => {
+app.put("/editRequisition", verifyToken, (req, res) => {
   const {
     requisition_id,
     user_id,

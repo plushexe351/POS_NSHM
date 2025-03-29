@@ -52,6 +52,7 @@ function AdminDashboard() {
   const [vendors, setVendors] = useState("");
   const [categories, setCategories] = useState("");
   const {
+    currentUser,
     setCurrentUser,
     showItemsTable,
     setShowItemsTable,
@@ -126,18 +127,24 @@ function AdminDashboard() {
   const fetchPurchaseRequisitions = async () => {
     try {
       const response = await axios.get(
-        `${REACT_APP_API_BASE_URL}/admin/purchaseRequisitions`
+        `${REACT_APP_API_BASE_URL}/admin/purchaseRequisitions`,
+        {
+          headers: { Authorization: sessionStorage.getItem("token") },
+        }
       );
       setPurchaseRequisitions(response.data);
     } catch (error) {
       console.error("Error fetching Purchase Requisitions:", error);
-      toast.error("Error fetching Purchase Requisitions");
+      if (currentUser) toast.error("Error fetching Purchase Requisitions");
     }
   };
   const fetchDepartments = async () => {
     try {
       const response = await axios.get(
-        `${REACT_APP_API_BASE_URL}/admin/departments`
+        `${REACT_APP_API_BASE_URL}/admin/departments`,
+        {
+          headers: { Authorization: sessionStorage.getItem("token") },
+        }
       );
       setDepartments(response.data);
       setFilteredDepartments(response.data);
@@ -149,7 +156,10 @@ function AdminDashboard() {
   const fetchCategories = async () => {
     try {
       const response = await axios.get(
-        `${REACT_APP_API_BASE_URL}/admin/itemCategories`
+        `${REACT_APP_API_BASE_URL}/admin/itemCategories`,
+        {
+          headers: { Authorization: sessionStorage.getItem("token") },
+        }
       );
       setCategories(response.data);
       setFilteredCategories(response.data);
@@ -161,7 +171,10 @@ function AdminDashboard() {
   const fetchVendors = async () => {
     try {
       const response = await axios.get(
-        `${REACT_APP_API_BASE_URL}/admin/vendors`
+        `${REACT_APP_API_BASE_URL}/admin/vendors`,
+        {
+          headers: { Authorization: sessionStorage.getItem("token") },
+        }
       );
       setVendors(response.data);
       setFilteredVendors(response.data);
@@ -194,12 +207,15 @@ function AdminDashboard() {
   const fetchRequests = async () => {
     try {
       const response = await axios.get(
-        `${REACT_APP_API_BASE_URL}/admin/requests`
+        `${REACT_APP_API_BASE_URL}/admin/requests`,
+        {
+          headers: { Authorization: sessionStorage.getItem("token") },
+        }
       );
       setRequests(response.data);
     } catch (error) {
       console.error("Error fetching requests:", error);
-      toast.error("Error fetching requests");
+      if (currentUser) toast.error("Error fetching requests");
     }
   };
 
@@ -221,16 +237,24 @@ function AdminDashboard() {
       fetchPurchaseRequisitions();
     };
 
-    fetchDataAndOtherRequests();
+    if (currentUser) {
+      fetchDataAndOtherRequests();
+    }
   }, []);
 
   const handleUpdate = (id, status, message) => {
     setupdating(id);
     setTimeout(async () => {
       try {
-        await axios.put(`${REACT_APP_API_BASE_URL}/admin/requests/${id}`, {
-          status,
-        });
+        await axios.put(
+          `${REACT_APP_API_BASE_URL}/admin/requests/${id}`,
+          {
+            status,
+          },
+          {
+            headers: { Authorization: sessionStorage.getItem("token") },
+          }
+        );
         setRequests((prevRequests) =>
           prevRequests.map((request) =>
             request.id === id ? { ...request, status } : request
@@ -250,9 +274,15 @@ function AdminDashboard() {
     setupdating(id);
     setTimeout(async () => {
       try {
-        await axios.put(`${REACT_APP_API_BASE_URL}/admin/requisitions/${id}`, {
-          status,
-        });
+        await axios.put(
+          `${REACT_APP_API_BASE_URL}/admin/requisitions/${id}`,
+          {
+            status,
+          },
+          {
+            headers: { Authorization: sessionStorage.getItem("token") },
+          }
+        );
         setPurchaseRequisitions((prevRequisitions) =>
           prevRequisitions.map((requisition) =>
             requisition.requisition_id === id

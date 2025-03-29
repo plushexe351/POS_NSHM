@@ -56,13 +56,22 @@ const AddRequisition = ({ onClose, requisitionPropsData, operationType }) => {
   useEffect(() => {
     const fetchOptions = async () => {
       const categoriesResponse = await fetch(
-        `${REACT_APP_API_BASE_URL}/admin/itemCategories`
+        `${REACT_APP_API_BASE_URL}/admin/itemCategories`,
+        {
+          headers: { Authorization: sessionStorage.getItem("token") },
+        }
       );
       const vendorsResponse = await fetch(
-        `${REACT_APP_API_BASE_URL}/admin/vendors`
+        `${REACT_APP_API_BASE_URL}/admin/vendors`,
+        {
+          headers: { Authorization: sessionStorage.getItem("token") },
+        }
       );
       const departmentsResponse = await fetch(
-        `${REACT_APP_API_BASE_URL}/admin/departments`
+        `${REACT_APP_API_BASE_URL}/admin/departments`,
+        {
+          headers: { Authorization: sessionStorage.getItem("token") },
+        }
       );
       setCategories(await categoriesResponse.json());
       setVendors(await vendorsResponse.json());

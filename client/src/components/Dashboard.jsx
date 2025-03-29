@@ -64,12 +64,15 @@ function Dashboard() {
   const fetchPurchaseRequisitions = async () => {
     try {
       const response = await axios.get(
-        `${REACT_APP_API_BASE_URL}/admin/purchaseRequisitions`
+        `${REACT_APP_API_BASE_URL}/admin/purchaseRequisitions`,
+        {
+          headers: { Authorization: sessionStorage.getItem("token") },
+        }
       );
       setPurchaseRequisitions(response.data);
     } catch (error) {
       console.error("Error fetching Purchase Requisitions:", error);
-      toast.error("Error fetching Purchase Requisitions");
+      if (currentUser) toast.error("Error fetching Purchase Requisitions");
     }
   };
 
@@ -115,26 +118,37 @@ function Dashboard() {
     const fetchRequests = async () => {
       try {
         const response = await axios.get(
-          `${REACT_APP_API_BASE_URL}/admin/requests`
+          `${REACT_APP_API_BASE_URL}/admin/requests`,
+          {
+            headers: { Authorization: sessionStorage.getItem("token") },
+          }
         );
         setRequests(response.data);
       } catch (error) {
         console.error("Error fetching requests:", error);
-        toast.error("Error fetching requests");
+        if (currentUser) toast.error("Error fetching requests");
       }
     };
-    fetchRequests();
 
-    fetchPurchaseRequisitions();
+    if (currentUser) {
+      fetchRequests();
+      fetchPurchaseRequisitions();
+    }
   }, [currentUser]);
 
   const handleRemove = (id, status, message) => {
     setRemoving(id);
     setTimeout(async () => {
       try {
-        await axios.put(`${REACT_APP_API_BASE_URL}/admin/requests/${id}`, {
-          status,
-        });
+        await axios.put(
+          `${REACT_APP_API_BASE_URL}/admin/requests/${id}`,
+          {
+            status,
+          },
+          {
+            headers: { Authorization: sessionStorage.getItem("token") },
+          }
+        );
         setRequests((prevRequests) =>
           prevRequests.map((request) =>
             request.id === id ? { ...request, status } : request
