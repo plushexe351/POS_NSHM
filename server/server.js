@@ -17,15 +17,15 @@ const JWT_SECRET = process.env.JWT_SECRET;
 
 // prod cors cfg
 
-// app.use(
-//   cors({
-//     origin: process.env.CORS_ORIGIN,
-//     credentials: true,
-//   })
-// );
+app.use(
+  cors({
+    origin: process.env.CORS_ORIGIN,
+    credentials: true,
+  })
+);
 
 // dev cors cfg
-app.use(cors());
+// app.use(cors());
 
 app.use(bodyParser.json());
 
