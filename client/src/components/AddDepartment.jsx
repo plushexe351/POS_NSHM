@@ -18,7 +18,7 @@ const AddDepartment = ({ onClose }) => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${sessionStorage.getItem("token")}`,
+          Authorization: sessionStorage.getItem("token"),
         },
         body: JSON.stringify(payload),
       });

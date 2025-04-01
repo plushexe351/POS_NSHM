@@ -22,6 +22,7 @@ function AdminLogin() {
   const [password, setPassword] = useState("");
   const { setCurrentUser } = useContext(AuthContext);
   const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const navigate = useNavigate();
 
@@ -33,6 +34,7 @@ function AdminLogin() {
   };
   const handleLogin = async (e) => {
     e.preventDefault();
+    setLoading(true);
     try {
       const response = await axios.post(
         `${REACT_APP_API_BASE_URL}/adminLogin`,
@@ -49,6 +51,7 @@ function AdminLogin() {
         navigate("/admin/dashboard");
         toast.success(`Welcome back, ${response.data.user.name}`);
         setErrorMessage("");
+        setLoading(false);
       }
     } catch (error) {
       if (error.response) {
@@ -59,6 +62,7 @@ function AdminLogin() {
         setErrorMessage("Couldn't connect to server");
         setMessage("");
       }
+      setLoading(false);
     }
   };
 
@@ -88,8 +92,8 @@ function AdminLogin() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
-            <button type="submit" className="submit">
-              Login as admin
+            <button type="submit" className="submit" disabled={loading}>
+              {loading ? "Loading..." : "Login as User"}
             </button>
             <div className="nav-section--title">
               <div className="linebreak"></div>

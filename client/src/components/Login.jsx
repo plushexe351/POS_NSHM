@@ -6,6 +6,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faExclamationCircle,
   faFileWaveform,
+  faL,
   faUser,
   faUserGear,
 } from "@fortawesome/free-solid-svg-icons";
@@ -22,6 +23,7 @@ function Login() {
   const { setCurrentUser } = useContext(AuthContext);
   const [message, setMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleAdminLoginClick = () => {
@@ -33,6 +35,7 @@ function Login() {
   };
   const handleLogin = async (e) => {
     e.preventDefault();
+    setLoading(true);
     try {
       const response = await axios.post(`${REACT_APP_API_BASE_URL}/login`, {
         username,
@@ -43,7 +46,7 @@ function Login() {
         setCurrentUser(response.data.user);
         navigate("/dashboard");
         toast.success(`Welcome back, ${response.data.user.name}`);
-
+        setLoading(false);
         setErrorMessage("");
       }
     } catch (error) {
@@ -55,6 +58,7 @@ function Login() {
         setErrorMessage("Couldn't connect to server");
         setMessage("");
       }
+      setLoading(false);
     }
   };
 
@@ -84,8 +88,8 @@ function Login() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
-            <button type="submit" className="submit">
-              Login as user
+            <button type="submit" className="submit" disabled={loading}>
+              {loading ? "Loading..." : "Login as Admin"}
             </button>
             <div className="nav-section--title">
               <div className="linebreak"></div>
@@ -124,6 +128,7 @@ function Login() {
             {errorMessage.includes("User not accepted") && (
               <InfoModal msg="You will be able to login if your registration requests have been approved" />
             )}
+            {/* {loading && <InfoModal msg="Connecting to server..." />} */}
           </form>
         </div>
       </div>
