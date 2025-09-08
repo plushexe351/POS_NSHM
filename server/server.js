@@ -30,20 +30,20 @@ app.use(cors());
 app.use(bodyParser.json());
 
 // prod mysql cfg
-// const db = mysql.createConnection({
-//   host: process.env.DB_HOST,
-//   port: process.env.DB_PORT,
-//   user: process.env.DB_USER,
-//   password: process.env.DB_PASSWORD,
-//   database: process.env.DB_NAME,
-// });
+const db = mysql.createConnection({
+  host: process.env.DB_HOST,
+  port: process.env.DB_PORT,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
+});
 
 // dev mysql cfg
-const db = mysql.createConnection({
-  host: "localhost",
-  user: "root",
-  database: "POS_NSHM",
-});
+// const db = mysql.createConnection({
+//   host: "localhost",
+//   user: "root",
+//   database: "POS_NSHM",
+// });
 
 // Connect to MySQL
 db.connect((err) => {
