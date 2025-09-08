@@ -58,7 +58,8 @@ Make sure not to name it anything else except the one specified. Run the followi
 
 ### 3. Configure .env
 
-Check out `.env.example`
+Check out `.env.example` in `client` and `server`
+and create your `.env` files accordingly.
 
 #### 3. Running the App
 
