@@ -21,11 +21,15 @@ Express.js, Node.js, MySQL, Google Gemini
 
 ## Key features
 
-- Implemented jwt authentication
-- Users can create Requisitions and track the status from user dashboard
-- Admins can manage Users, edit, approve, create and delete requisitions and generate Purchase Order receipts using a custom template built for NSHM Knowledge Campus, Kolkata.
-- Admin Dashboard provides option to CRUD Users, Requisitions, Departments, Vendors
-- Admin Dashboard also provides an analytics page with detailed analytics on requisitions and an AI helper and analyze tool powered by Gemini
+- Implemented JWT-based authentication for secure access.
+
+- Enabled users to create requisitions and track their status directly from the user dashboard.
+
+- Built an admin panel where admins can manage users, create/edit/approve/delete requisitions, and generate Purchase Order receipts using a custom NSHM Knowledge Campus, Kolkata template.
+
+- Admin dashboard includes full CRUD operations for Users, Requisitions, Departments, and Vendors.
+
+- Added an analytics section with detailed requisition insights, plus an AI-powered helper and analysis tool (powered by Gemini).
 
 ## Getting Started
 
