@@ -58,6 +58,8 @@ function AdminDashboard() {
     setShowItemsTable,
     writingToolsMode,
     setWritingToolsMode,
+    showNavbarInMobile,
+    setShowNavbarInMobile,
   } = useContext(AuthContext);
   const [error, setError] = useState(false);
   const [viewMode, setViewMode] = useState("allRequisitions"); // "manageUsers" or "viewRequests"
@@ -220,25 +222,21 @@ function AdminDashboard() {
   };
 
   useEffect(() => {
+    const fetchDataAndOtherRequests = async () => {
+      await fetchData();
+      await fetchRequests();
+      await fetchVendors();
+      await fetchCategories();
+      await fetchDepartments();
+      await fetchPurchaseRequisitions();
+    };
     const storedUser = sessionStorage.getItem("user");
     if (storedUser) {
       setCurrentUser(JSON.parse(storedUser));
       console.log(JSON.parse(storedUser));
+      fetchDataAndOtherRequests();
     } else {
       navigate("/admin/login"); // Redirect if no user is stored
-    }
-
-    const fetchDataAndOtherRequests = async () => {
-      await fetchData();
-      fetchRequests();
-      fetchVendors();
-      fetchCategories();
-      fetchDepartments();
-      fetchPurchaseRequisitions();
-    };
-
-    if (currentUser) {
-      fetchDataAndOtherRequests();
     }
   }, []);
 
@@ -445,8 +443,12 @@ function AdminDashboard() {
 
   const handleDeleteDepartment = async (id) => {
     try {
+      const token = sessionStorage.getItem("token");
       const response = await axios.delete(
-        `${REACT_APP_API_BASE_URL}/departments/${id}`
+        `${REACT_APP_API_BASE_URL}/departments/${id}`,
+        {
+          headers: { Authorization: token },
+        }
       );
 
       if (response.data.success) {
@@ -464,10 +466,15 @@ function AdminDashboard() {
       alert("Failed to delete department");
     }
   };
+
   const handleDeleteCategory = async (id) => {
     try {
+      const token = sessionStorage.getItem("token");
       const response = await axios.delete(
-        `${REACT_APP_API_BASE_URL}/categories/${id}`
+        `${REACT_APP_API_BASE_URL}/categories/${id}`,
+        {
+          headers: { Authorization: token },
+        }
       );
 
       if (response.data.success) {
@@ -487,8 +494,12 @@ function AdminDashboard() {
   };
   const handleDeleteVendor = async (id) => {
     try {
+      const token = sessionStorage.getItem("token");
       const response = await axios.delete(
-        `${REACT_APP_API_BASE_URL}/vendors/${id}`
+        `${REACT_APP_API_BASE_URL}/vendors/${id}`,
+        {
+          headers: { Authorization: token },
+        }
       );
 
       if (response.data.success) {
@@ -714,8 +725,10 @@ function AdminDashboard() {
 
   return (
     <div className="admin-dashboard" onClick={() => setWritingToolsMode(false)}>
-      <nav className="dashboard--navbar">
-        {/* <img src={nshmLogo} alt="" width="50px" className="nshmLogo" /> */}
+      <nav
+        className={`dashboard--navbar ${showNavbarInMobile ? "show" : ""}`}
+        onClick={() => setShowNavbarInMobile(false)}
+      >
         <div className="title--admin-panel">
           <h1 id="organization-name">NSHM Kolkata</h1>
           <span id="system-title">Purchase Order Portal</span>

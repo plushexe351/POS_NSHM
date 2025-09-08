@@ -3,7 +3,6 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  // transition: 0.1s ease;
 }
 @mixin smallDevice {
   @media screen and (max-width: 900px) {
@@ -353,8 +352,8 @@ body {
     min-width: 300px;
     color: white;
     height: 100%;
-    background-color: #ff003b;
     background-color: #000;
+    transition: 0.2s ease;
 
     .metric {
       margin-left: auto;
@@ -364,9 +363,14 @@ body {
       margin: 1rem;
     }
     @include mediumDevice {
+      position: fixed;
+      height: 100vh;
+      top: 0;
+      left: 0;
       min-width: 0;
       width: 0;
-      &.active {
+      z-index: 999;
+      &.show {
         min-width: 300px;
       }
     }
@@ -450,13 +454,19 @@ body {
       background-color: #1a191f;
       color: white;
       width: 100%;
-      #notification-icon {
+
+      #hamburger {
+        display: none;
+        @include mediumDevice {
+          display: block;
+        }
+      }
+      .icon {
         cursor: pointer;
       }
 
       .info {
         margin-right: auto;
-        cursor: pointer;
       }
 
       .notification-bell {

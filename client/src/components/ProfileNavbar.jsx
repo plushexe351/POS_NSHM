@@ -1,6 +1,7 @@
 import {
   faArrowAltCircleRight,
   faArrowRightFromBracket,
+  faBars,
   faBell,
   faBellConcierge,
   faClock,
@@ -23,18 +24,35 @@ import { AuthContext } from "../context/AuthContext";
 import { AnimatePresence, motion } from "framer-motion";
 
 const ProfileNavbar = ({ deadlineCounts, pr }) => {
-  const { currentUser, setWritingToolsMode } = useContext(AuthContext);
+  const {
+    currentUser,
+    setWritingToolsMode,
+    showNavbarInMobile,
+    setShowNavbarInMobile,
+  } = useContext(AuthContext);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
 
   const latestRequisition = pr[0];
   return (
     <div className="nav">
+      <FontAwesomeIcon
+        icon={faBars}
+        id="hamburger"
+        className="icon"
+        onClick={() =>
+          setShowNavbarInMobile((showNavbarInMobile) => !showNavbarInMobile)
+        }
+      />
       <div
         className="notification-bell"
         onClick={() => setShowNotifications(!showNotifications)}
       >
-        <FontAwesomeIcon icon={faBell} id="notification-icon" />
+        <FontAwesomeIcon
+          icon={faBell}
+          id="notification-icon"
+          className="icon"
+        />
         <div className="notification-dot"></div>
         <AnimatePresence>
           {showNotifications && (
@@ -104,14 +122,14 @@ const ProfileNavbar = ({ deadlineCounts, pr }) => {
       <SparklesIcon
         size={20}
         fill="white"
-        className="writing-tools-toggle"
+        className="writing-tools-toggle icon"
         onClick={(e) => {
           e.stopPropagation();
           setWritingToolsMode(true);
         }}
       />
       <div className="info" onClick={() => setShowInfo(!showInfo)}>
-        <FontAwesomeIcon icon={faInfoCircle} id="info" />
+        <FontAwesomeIcon icon={faInfoCircle} id="info" className="icon" />
         <AnimatePresence>
           {showInfo && (
             <motion.div
@@ -165,7 +183,7 @@ const ProfileNavbar = ({ deadlineCounts, pr }) => {
         <div>Logged in as</div>
         {currentUser?.name}
       </div>
-      <FontAwesomeIcon icon={faUser} id="profile-icon" />
+      <FontAwesomeIcon icon={faUser} id="profile-icon" className="icon" />
     </div>
   );
 };

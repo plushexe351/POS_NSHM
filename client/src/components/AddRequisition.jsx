@@ -134,9 +134,15 @@ const AddRequisition = ({ onClose, requisitionPropsData, operationType }) => {
         ? `${REACT_APP_API_BASE_URL}/editRequisition`
         : `${REACT_APP_API_BASE_URL}/addRequisitions`;
 
+      const config = {
+        headers: {
+          Authorization: token,
+        },
+      };
+
       requisitionData.requisition_id
-        ? await axios.put(url, requisitionData)
-        : await axios.post(url, requisitionData);
+        ? await axios.put(url, requisitionData, config)
+        : await axios.post(url, requisitionData, config);
 
       toast.success("Requisition saved successfully");
     } catch (error) {
@@ -185,8 +191,8 @@ const AddRequisition = ({ onClose, requisitionPropsData, operationType }) => {
                     <option value="" disabled>
                       Select Category
                     </option>
-                    {categories.map((category) => (
-                      <option value={category.category_name}>
+                    {categories.map((category, index) => (
+                      <option value={category.category_name} key={index}>
                         {category.category_name}
                       </option>
                     ))}
@@ -246,8 +252,8 @@ const AddRequisition = ({ onClose, requisitionPropsData, operationType }) => {
                 <option value="" disabled>
                   Select Department
                 </option>
-                {departments.map((department) => (
-                  <option value={department.dept_name}>
+                {departments.map((department, index) => (
+                  <option value={department.dept_name} key={index}>
                     {department.dept_name}
                   </option>
                 ))}
@@ -264,8 +270,8 @@ const AddRequisition = ({ onClose, requisitionPropsData, operationType }) => {
                 <option value="" disabled>
                   Select Vendor
                 </option>
-                {vendors.map((vendor) => (
-                  <option value={vendor.vendor_name}>
+                {vendors.map((vendor, index) => (
+                  <option value={vendor.vendor_name} key={index}>
                     {vendor.vendor_name}
                   </option>
                 ))}
@@ -277,6 +283,7 @@ const AddRequisition = ({ onClose, requisitionPropsData, operationType }) => {
                 type="date"
                 value={requiredOn}
                 onChange={(e) => setRequiredOn(e.target.value)}
+                required
               />
             </label>
             <label>

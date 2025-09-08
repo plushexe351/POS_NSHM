@@ -7,6 +7,7 @@ import "prismjs/components/prism-python";
 import { marked } from "marked";
 import "./WritingTools.scss";
 import { motion } from "framer-motion";
+import { ChartScatter, Sparkles } from "lucide-react";
 
 const geminiApiKey = process.env.REACT_APP_GEMINI_API_KEY;
 const { GoogleGenerativeAI } = require("@google/generative-ai");
@@ -52,7 +53,11 @@ const WritingTools = ({ purchaseRequisitions }) => {
   ` + GEMINI_GENERAL_PROMPT;
 
   const GEMINI_ANALYTICS_INSTRUCTIONS_PROMPT =
-    `You are an expert at analytics. You cateogrise, identify trends and come up with accurate summaries and conclusions. When you refer to a Requisition ID, use the format 'YYYYMMDDUID eg. '2024010424' where '24' is the 'UID'. Keep the summary as concise and accurate as possible. Don't provide inadequate information. Avoid numerics. Provide warnings and suggestions. Refer to Requisition ID only in case of anomalies (use the format specified above)` +
+    `You are an expert at analytics. You cateogrise, identify trends and come up with accurate summaries and conclusions. When you refer to a Requisition ID, use the format 'YYYYMMDDUID eg. '2024010424' where '24' is the 'UID'. Keep the summary as concise and accurate as possible. Don't provide inadequate information. Provide warnings and suggestions.` +
+    GEMINI_GENERAL_PROMPT;
+
+  const GEMINI_PREDICTION_INSTRUCTIONS_PROMPT =
+    `You are an expert at predictive analysis. You identify trends and come up with accurate predictions and conclusions. When you refer to a Requisition ID, use the format 'YYYYMMDDUID eg. '2024010424' where '24' is the 'UID'. You MUST perform analysis even if there is insufficient data by using common sense or logic. Provide warnings and suggestions only at the end after a rough estimation. ` +
     GEMINI_GENERAL_PROMPT;
 
   useEffect(() => {
@@ -64,6 +69,8 @@ const WritingTools = ({ purchaseRequisitions }) => {
     prompt = GEMINI_ANALYTICS_INSTRUCTIONS_PROMPT;
   } else if (messageType.toLowerCase().trim() === "help") {
     prompt = GEMINI_HELPER_INSTRUCTIONS_PROMPT;
+  } else if (messageType.toLowerCase().trim() === "predict") {
+    prompt = GEMINI_PREDICTION_INSTRUCTIONS_PROMPT;
   } else {
     prompt = GEMINI_GENERAL_PROMPT;
   }
@@ -103,6 +110,12 @@ const WritingTools = ({ purchaseRequisitions }) => {
         Action Type : ${messageType}
         Additional User Preferences : ${query}
         `;
+      } else if (messageType.toLowerCase().trim() === "predict") {
+        msg = `
+          Data : ${JSON.stringify(purchaseRequisitions, null, 2)}
+          Action Type : ${messageType}
+          Additional User Preferences : ${query}
+          `;
       } else {
         msg = `
         Action Type : ${messageType}
@@ -187,6 +200,10 @@ const WritingTools = ({ purchaseRequisitions }) => {
           <div className="analyze option">
             <Edit3 />
             Analyze
+          </div>
+          <div className="predict option">
+            <ChartScatter />
+            Predict
           </div>
           <div className="help option">
             <FileText />

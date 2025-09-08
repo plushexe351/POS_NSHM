@@ -24,12 +24,16 @@ const GeneratePO = ({ requisition, onClose }) => {
       if (requisition.selected_vendor) {
         try {
           const response = await fetch(
-            `${REACT_APP_API_BASE_URL}/vendor/${requisition.selected_vendor}`
+            `${REACT_APP_API_BASE_URL}/vendor/${requisition.selected_vendor}`,
+            {
+              headers: { Authorization: sessionStorage.getItem("token") },
+            }
           );
           const data = await response.json();
 
           if (response.ok) {
             setVendorData(data.vendor); // Set vendor data
+            console.log(data.vendor);
           } else {
             setError(data.error); // Set error message if vendor is not found
           }
@@ -109,7 +113,8 @@ const GeneratePO = ({ requisition, onClose }) => {
     const options = {
       margin: 0,
       filename: "receipt.pdf",
-      jsPDF: { unit: "in", format: "letter", orientation: "portrait" }, // A5 dimensions in inches
+      html2canvas: { scale: 2, dpi: 300, letterRendering: true },
+      jsPDF: { unit: "pt", format: "a4", orientation: "portrait" },
     };
 
     html2pdf().set(options).from(receiptElement).save();
@@ -367,7 +372,7 @@ const GeneratePO = ({ requisition, onClose }) => {
               <div className="GSTIN">
                 <strong>
                   GSTIN
-                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:-
+                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:-
                 </strong>
                 <p>{vendorData?.vendor_GSTIN}</p>
               </div>

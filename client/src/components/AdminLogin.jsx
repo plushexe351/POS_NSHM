@@ -93,7 +93,7 @@ function AdminLogin() {
               onChange={(e) => setPassword(e.target.value)}
             />
             <button type="submit" className="submit" disabled={loading}>
-              {loading ? "Loading..." : "Login as User"}
+              {loading ? "Loading..." : "Login as Admin"}
             </button>
             <div className="nav-section--title">
               <div className="linebreak"></div>
