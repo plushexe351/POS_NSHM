@@ -56,6 +56,10 @@ Make sure not to name it anything else except the one specified. Run the followi
 - Copy paste the contents of `POS_NSHM.sql` without any trailing comments at the top or bottom of the file to the query tab
 - Execute all
 
+### 3. Configure .env
+
+Check out `.env.example`
+
 #### 3. Running the App
 
 - Run `npm start` on both `client` and `server`
