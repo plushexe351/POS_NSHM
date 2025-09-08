@@ -48,8 +48,8 @@ npm install
 
 #### 2. Configure Database
 
-- Create a new database in MySQL workbench or preferred SQL manager like PHP MyAdmin and name it ‘POS_NSHM’. Make sure not to name
-it anything else except the one specified. Run the following command to do so :
+- Create a new database in MySQL workbench or preferred SQL manager like PHP MyAdmin and name it `POS_NSHM`. 
+Make sure not to name it anything else except the one specified. Run the following command to do so :
 `CREATE DATABASE POS_NSHM;`
 - Create a new query tab and execute the query
 `USE POS-NSHM;`
@@ -58,7 +58,7 @@ it anything else except the one specified. Run the following command to do so :
 
 #### 3. Running the App
 
-- Run 'npm start' on both `client` and `server`
+- Run `npm start` on both `client` and `server`
 
 ### 4. Log in using test account
 
