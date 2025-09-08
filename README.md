@@ -60,7 +60,7 @@ Make sure not to name it anything else except the one specified. Run the followi
 
 - Run `npm start` on both `client` and `server`
 
-### 4. Log in using test account
+#### 4. Log in using test account
 
 - Go to the Register page
 - Fill up and submit the Register form.
